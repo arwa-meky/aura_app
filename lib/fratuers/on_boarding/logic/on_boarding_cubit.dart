@@ -9,22 +9,25 @@ class OnBoardingCubit extends Cubit<OnBoardingState> {
 
   final CarouselSliderController carouselController =
       CarouselSliderController();
+
   final List<OnBoardingModels> onBoardingModels = [
     OnBoardingModels(
       imagePath: 'assets/images/onboarding1.png',
-      title: "Welcome to Aura",
+      title: "Your Partner\nin Smart Health Monitoring",
       descraption:
-          "Discover a new way to connect, share, and enjoy with friends.",
+          "A unified intelligent system for continuous health tracking and early panic attack detection.",
     ),
     OnBoardingModels(
       imagePath: 'assets/images/onboarding2.png',
-      title: "Connect with Friends",
-      descraption: "Stay in touch and share your moments, all in one place.",
+      title: "Real-Time\nHealth Monitoring",
+      descraption:
+          "Track your heart rate, oxygen level, temperature, and activity effortlessly all from your wrist.",
     ),
     OnBoardingModels(
       imagePath: 'assets/images/onboarding3.png',
-      title: "Enjoy the Experience",
-      descraption: "Let's get started and explore the features together.",
+      title: "AI-Powered\nEarly Detection",
+      descraption:
+          "AURA analyzes your health patterns to detect risks early and alert you before issues escalate.",
     ),
   ];
 

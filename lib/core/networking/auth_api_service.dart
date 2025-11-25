@@ -35,6 +35,28 @@ class AuthApiService {
     );
   }
 
+  Future<Response> validateOtp({
+    required String email,
+    required String otp,
+  }) async {
+    return await DioFactory.postData(
+      path: ApiConstants.validateOtp,
+      data: {'email': email, 'otp': otp},
+    );
+  }
+
+  Future<Response> completeProfile({
+    required String gender,
+    required int age,
+    required int weight,
+  }) async {
+    return await DioFactory.postData(
+      path: ApiConstants.completeProfile,
+      data: {'gender': gender, 'age': age, 'weight': weight},
+      token: LocalStorage.token,
+    );
+  }
+
   Future<Response> logout() async {
     return await DioFactory.postData(
       path: ApiConstants.logout,
@@ -50,34 +72,42 @@ class AuthApiService {
     );
   }
 
-  Future<Response> loginWithGoogle({required String googleIdToken}) async {
-    return await DioFactory.postData(
-      path: ApiConstants.loginWithGoogle,
-      data: {'id_token': googleIdToken},
-    );
-  }
-
-  Future<Response> validateOtp({required String otp}) async {
-    return await DioFactory.postData(
-      path: ApiConstants.validateOtp,
-      data: {'otp': otp},
-      // Note: Your API might require the user's token here.
-      // If so, add: token: LocalStorage.token
-    );
-  }
-
   Future<Response> resetPassword({
-    required String otp,
+    required String token,
+    required String email,
     required String newPassword,
     required String confirmPassword,
   }) async {
     return await DioFactory.patchData(
-      path: ApiConstants.resetPassword,
+      path: "${ApiConstants.resetPassword}/$token",
       data: {
-        'otp': otp,
+        'email': email,
         'password': newPassword,
-        'password_confirmation': confirmPassword,
+        'passwordConfirm': confirmPassword,
       },
+    );
+  }
+
+  Future<Response> updateMyPassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    return await DioFactory.postData(
+      path: ApiConstants.updateMyPassword,
+      data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+        'passwordConfirm': confirmPassword,
+      },
+      token: LocalStorage.token,
+    );
+  }
+
+  Future<Response> loginWithGoogle({required String googleIdToken}) async {
+    return await DioFactory.getData(
+      path: ApiConstants.loginWithGoogle,
+      token: googleIdToken,
     );
   }
 }

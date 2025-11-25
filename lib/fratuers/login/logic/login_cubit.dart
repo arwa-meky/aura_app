@@ -3,8 +3,8 @@ import 'package:aura_project/core/networking/auth_api_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'login_state.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'login_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
   LoginCubit() : super(LoginInitial());
@@ -20,25 +20,28 @@ class LoginCubit extends Cubit<LoginState> {
 
     emit(LoginLoading());
     try {
-      final response = await _apiService.login(
+      await _apiService.login(
         email: emailController.text,
         password: passwordController.text,
       );
-
-      final token = response.data['token'];
-      await LocalStorage.saveToken(token);
       emit(LoginSuccess());
     } on DioException catch (e) {
-      emit(LoginFailure(handleDioError(e, "Invalid email or password")));
+      emit(LoginFailure(handleDioError(e, "Login failed")));
     } catch (e) {
-      emit(LoginFailure("An unexpected error occurred: ${e.toString()}"));
+      emit(LoginFailure(e.toString()));
     }
   }
 
   void loginWithGoogle() async {
     emit(LoginGoogleLoading());
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId:
+            "1054613969192-94sm2a01bbpnl41cvnh4i6kjkbecadvm.apps.googleusercontent.com",
+        scopes: ['email'],
+      );
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
         emit(LoginInitial());
@@ -50,16 +53,18 @@ class LoginCubit extends Cubit<LoginState> {
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
-        throw Exception("Google ID Token was null");
+        throw Exception(
+          "Google ID Token was null. Please check serverClientId.",
+        );
       }
 
       final response = await _apiService.loginWithGoogle(
         googleIdToken: idToken,
       );
 
-      final token = response.data['token'];
-
+      final String token = response.data['token'];
       await LocalStorage.saveToken(token);
+
       emit(LoginGoogleSuccess());
     } on DioException catch (e) {
       emit(LoginGoogleFailure(handleDioError(e, "Google login failed")));
@@ -95,8 +100,9 @@ String handleDioError(
   String defaultError = "An error occurred",
 ]) {
   if (e.response != null) {
-    final serverError = e.response?.data['message'];
-    return serverError ?? defaultError;
+    final msg = e.response?.data['message'];
+    if (msg != null) return msg;
+    return defaultError;
   } else {
     return "Check your internet connection";
   }

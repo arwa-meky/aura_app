@@ -34,7 +34,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   backgroundColor: Colors.green,
                 ),
               );
-              context.pushNamed(Routes.validateOtp);
+              context.pushNamed(
+                Routes.validateOtp,
+                arguments: context.read<RegisterCubit>().emailController.text,
+              );
             } else if (state is RegisterFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -131,6 +134,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       CustomTextButton(
                         text: "Already have an account? Login",
+                        color: 0xff000000,
                         onPressed: () {
                           Navigator.pop(context);
                         },

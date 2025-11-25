@@ -9,10 +9,13 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
   ResetPasswordCubit() : super(ResetPasswordInitial());
 
   final AuthApiService _apiService = AuthApiService();
-  final TextEditingController otpController = TextEditingController();
+
+  final TextEditingController tokenController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+
   final formKey = GlobalKey<FormState>();
 
   void resetPassword() async {
@@ -27,32 +30,42 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
     emit(ResetPasswordLoading());
     try {
       await _apiService.resetPassword(
-        otp: otpController.text,
+        token: tokenController.text.trim(),
+        email: emailController.text.trim(),
         newPassword: passwordController.text,
         confirmPassword: confirmPasswordController.text,
       );
+
       emit(ResetPasswordSuccess());
     } on DioException catch (e) {
-      emit(ResetPasswordFailure(handleDioError(e, "Invalid OTP or request")));
+      emit(ResetPasswordFailure(handleDioError(e, "Failed to reset password")));
     } catch (e) {
-      emit(ResetPasswordFailure("An unexpected error occurred."));
+      emit(ResetPasswordFailure(e.toString()));
     }
   }
 
-  static String? otpValidator(String? value) {
-    if (value == null || value.isEmpty) return "Please enter the OTP/Token";
+  static String? tokenValidator(String? value) {
+    if (value == null || value.isEmpty)
+      return "Please enter the token from your email";
+    return null;
+  }
+
+  static String? emailValidator(String? value) {
+    if (value == null || !value.contains('@'))
+      return "Please enter a valid email";
     return null;
   }
 
   static String? passwordValidator(String? value) {
     if (value == null || value.length < 6)
-      return "Password must be at least 6 characters";
+      return "Password too short (min 6 chars)";
     return null;
   }
 
   @override
   Future<void> close() {
-    otpController.dispose();
+    tokenController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     return super.close();

@@ -4,12 +4,14 @@ import 'package:aura_project/fratuers/login/logic/reset_password_cubit.dart';
 import 'package:aura_project/fratuers/login/logic/reset_password_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:aura_project/core/widgets/custom_auth_title_desc.dart';
 import 'package:aura_project/core/widgets/custom_button.dart';
 import 'package:aura_project/core/widgets/custom_text_field.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
+
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
@@ -29,7 +31,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             if (state is ResetPasswordSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("Password reset successfully!"),
+                  content: Text("Password changed successfully! Login now."),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -45,6 +47,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           },
           builder: (context, state) {
             final cubit = context.read<ResetPasswordCubit>();
+
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
                 horizontal: context.screenWidth * 0.04,
@@ -54,18 +57,32 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 child: Column(
                   children: [
                     SizedBox(height: context.usableHeight * 0.05),
+
                     const CustomAuthTitleDesc(
                       title: "Create New Password",
                       description:
-                          "Enter the OTP from your email and your new password.",
+                          "Enter the token you received in your email, verify your email, and set a new password.",
                     ),
+
                     SizedBox(height: context.usableHeight * 0.03),
+
                     CustomTextField(
-                      controller: cubit.otpController,
-                      hintText: "OTP / Token",
-                      validator: ResetPasswordCubit.otpValidator,
+                      controller: cubit.tokenController,
+                      hintText: "Token (from email)",
+                      validator: ResetPasswordCubit.tokenValidator,
                     ),
+
                     SizedBox(height: context.usableHeight * 0.02),
+
+                    CustomTextField(
+                      controller: cubit.emailController,
+                      hintText: "Confirm your Email",
+                      keyboardType: TextInputType.emailAddress,
+                      validator: ResetPasswordCubit.emailValidator,
+                    ),
+
+                    SizedBox(height: context.usableHeight * 0.02),
+
                     CustomTextField(
                       controller: cubit.passwordController,
                       hintText: "New Password",
@@ -80,15 +97,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         });
                       },
                     ),
+
                     SizedBox(height: context.usableHeight * 0.02),
+
                     CustomTextField(
                       controller: cubit.confirmPasswordController,
                       hintText: "Confirm New Password",
                       obscureText: isConfirmPasswordObscure,
                       validator: (value) {
-                        if (value != cubit.passwordController.text) {
+                        if (value != cubit.passwordController.text)
                           return "Passwords do not match";
-                        }
                         return null;
                       },
                       suffixIcon: isConfirmPasswordObscure
@@ -100,7 +118,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         });
                       },
                     ),
+
                     SizedBox(height: context.usableHeight * 0.05),
+
                     (state is ResetPasswordLoading)
                         ? const CircularProgressIndicator()
                         : CustomButton(

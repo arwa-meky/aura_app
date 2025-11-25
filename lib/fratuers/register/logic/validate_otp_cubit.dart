@@ -1,3 +1,4 @@
+import 'package:aura_project/core/helpers/local_storage.dart';
 import 'package:aura_project/core/networking/auth_api_service.dart';
 import 'package:aura_project/fratuers/login/logic/login_cubit.dart';
 import 'package:dio/dio.dart';
@@ -11,20 +12,37 @@ class ValidateOtpCubit extends Cubit<ValidateOtpState> {
   final AuthApiService _apiService = AuthApiService();
   final TextEditingController otpController = TextEditingController();
 
-  void verifyOtp() async {
+  void verifyOtp({required String email}) async {
     if (otpController.text.isEmpty || otpController.text.length < 4) {
       emit(ValidateOtpFailure("Please enter a valid OTP"));
       return;
     }
 
     emit(ValidateOtpLoading());
+
     try {
-      await _apiService.validateOtp(otp: otpController.text);
-      emit(ValidateOtpSuccess());
+      final response = await _apiService.validateOtp(
+        email: email,
+        otp: otpController.text,
+      );
+
+      if (response.data['data'] != null &&
+          response.data['data']['token'] != null) {
+        final String token = response.data['data']['token'];
+        await LocalStorage.saveToken(token);
+      }
+
+      final String? nextStep = response.data['data']?['nextStep'];
+
+      if (nextStep != null && nextStep.contains("complete-profile")) {
+        emit(ValidateOtpNavigateToCompleteProfile());
+      } else {
+        emit(ValidateOtpSuccess());
+      }
     } on DioException catch (e) {
       emit(ValidateOtpFailure(handleDioError(e, "Invalid OTP")));
     } catch (e) {
-      emit(ValidateOtpFailure("An unexpected error occurred."));
+      emit(ValidateOtpFailure("An unexpected error occurred: ${e.toString()}"));
     }
   }
 

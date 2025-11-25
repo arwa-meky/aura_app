@@ -9,7 +9,8 @@ import 'package:aura_project/core/widgets/custom_button.dart';
 import 'package:aura_project/core/widgets/custom_text_field.dart';
 
 class ValidateOtpScreen extends StatelessWidget {
-  const ValidateOtpScreen({super.key});
+  final String email;
+  const ValidateOtpScreen({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +23,19 @@ class ValidateOtpScreen extends StatelessWidget {
             if (state is ValidateOtpSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("Account verified successfully!"),
+                  content: Text("Login Successful!"),
                   backgroundColor: Colors.green,
                 ),
               );
-              context.pushNamedAndRemoveAll(Routes.login);
+              context.pushNamedAndRemoveAll(Routes.home);
+            } else if (state is ValidateOtpNavigateToCompleteProfile) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Please complete your profile"),
+                  backgroundColor: Colors.blue,
+                ),
+              );
+              context.pushNamedAndRemoveAll(Routes.completeProfile);
             } else if (state is ValidateOtpFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -38,6 +47,7 @@ class ValidateOtpScreen extends StatelessWidget {
           },
           builder: (context, state) {
             final cubit = context.read<ValidateOtpCubit>();
+
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
                 horizontal: context.screenWidth * 0.04,
@@ -45,23 +55,30 @@ class ValidateOtpScreen extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(height: context.usableHeight * 0.05),
+
                   const CustomAuthTitleDesc(
                     title: "Check Your Email",
                     description:
-                        "We've sent an OTP code to your email. Please enter it below.",
+                        "We've sent an OTP code to your email. Please enter it below to verify your account.",
                   ),
-                  SizedBox(height: context.usableHeight * 0.03),
+
+                  SizedBox(height: context.usableHeight * 0.05),
+
                   CustomTextField(
                     controller: cubit.otpController,
-                    hintText: "Enter OTP",
+                    hintText: "Enter 6-digit Code",
                     keyboardType: TextInputType.number,
                   ),
+
                   SizedBox(height: context.usableHeight * 0.05),
+
                   (state is ValidateOtpLoading)
                       ? const CircularProgressIndicator()
                       : CustomButton(
                           text: "Verify",
-                          onPressed: cubit.verifyOtp,
+                          onPressed: () {
+                            cubit.verifyOtp(email: email);
+                          },
                         ),
                 ],
               ),

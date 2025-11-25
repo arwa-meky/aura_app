@@ -8,4 +8,5 @@ class Routes {
   static const String home = '/home';
   static const String validateOtp = '/validateOtp';
   static const String resetPassword = '/resetPassword';
+  static const String completeProfile = '/completeProfile';
 }

@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 class CustomTextButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String text;
+  final int color;
   const CustomTextButton({
     super.key,
     required this.onPressed,
     required this.text,
+    required this.color,
   });
 
   @override
@@ -26,6 +28,7 @@ class CustomTextButton extends StatelessWidget {
         text,
         style: TextStyle(
           fontSize: context.getResponsiveFontSize(14, minSize: 12, maxSize: 16),
+          color: Color(color),
         ),
       ),
     );

@@ -11,6 +11,7 @@ import 'package:aura_project/core/widgets/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -26,9 +27,21 @@ class _LoginScreenState extends State<LoginScreen> {
         appBar: AppBar(title: const Text("Login")),
         body: BlocConsumer<LoginCubit, LoginState>(
           listener: (context, state) {
-            if (state is LoginSuccess || state is LoginGoogleSuccess) {
+            if (state is LoginSuccess) {
+              context.pushNamed(
+                Routes.validateOtp,
+                arguments: context.read<LoginCubit>().emailController.text,
+              );
+            } else if (state is LoginGoogleSuccess) {
               context.pushNamedAndRemoveAll(Routes.home);
             } else if (state is LoginFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            } else if (state is LoginGoogleFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.errorMessage),
@@ -39,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           builder: (context, state) {
             final cubit = context.read<LoginCubit>();
+
             return SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -49,18 +63,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     children: [
                       SizedBox(height: context.usableHeight * 0.05),
+
                       const CustomAuthTitleDesc(
                         title: "Welcome Back!",
                         description: "Login to continue using the app",
                       ),
+
                       SizedBox(height: context.usableHeight * 0.03),
+
                       CustomTextField(
                         controller: cubit.emailController,
                         hintText: "Email",
                         keyboardType: TextInputType.emailAddress,
                         validator: LoginCubit.emailValidator,
                       ),
+
                       SizedBox(height: context.usableHeight * 0.02),
+
                       CustomTextField(
                         controller: cubit.passwordController,
                         hintText: "Password",
@@ -75,23 +94,29 @@ class _LoginScreenState extends State<LoginScreen> {
                           });
                         },
                       ),
+
                       Align(
                         alignment: Alignment.centerRight,
                         child: CustomTextButton(
                           text: "Forgot Password?",
+                          color: 0xff000000,
                           onPressed: () {
                             context.pushNamed(Routes.forgetPassword);
                           },
                         ),
                       ),
+
                       SizedBox(height: context.usableHeight * 0.03),
+
                       (state is LoginLoading)
                           ? const CircularProgressIndicator()
                           : CustomButton(
                               text: "Login",
                               onPressed: cubit.loginWithEmail,
                             ),
+
                       SizedBox(height: context.usableHeight * 0.02),
+
                       (state is LoginGoogleLoading)
                           ? const CircularProgressIndicator(color: Colors.blue)
                           : SizedBox(
@@ -101,13 +126,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 icon: const Icon(
                                   Icons.g_mobiledata,
                                   color: Colors.red,
-                                  size: 28,
+                                  size: 30,
                                 ),
-                                label: const Text("Sign in with Google"),
+                                label: Text(
+                                  "Sign in with Google",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: context.getResponsiveFontSize(
+                                      16,
+                                      minSize: 14,
+                                      maxSize: 18,
+                                    ),
+                                  ),
+                                ),
                                 onPressed: cubit.loginWithGoogle,
                                 style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.black,
                                   backgroundColor: Colors.white,
+                                  elevation: 1,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(
                                       context.screenWidth * 0.04,
@@ -117,12 +152,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
+
                       SizedBox(height: context.usableHeight * 0.03),
+
                       CustomTextButton(
                         text: "Don't have an account? Sign up",
                         onPressed: () {
                           context.pushNamed(Routes.register);
                         },
+                        color: 0xff000000,
                       ),
                     ],
                   ),
