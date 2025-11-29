@@ -62,7 +62,7 @@ class DioFactory {
   }
 
   static Future<Response> getData({required String path, String? token}) async {
-    Map<String, dynamic> headers = {};
+    Map<String, dynamic> headers = {'Accept': 'application/json'};
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }

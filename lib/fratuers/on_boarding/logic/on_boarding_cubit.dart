@@ -33,7 +33,7 @@ class OnBoardingCubit extends Cubit<OnBoardingState> {
 
   void finishOnBoarding() {
     LocalStorage.setHasSeenOnBoarding(true);
-    emit(OnBoardingNavigateToLogin());
+    emit(OnBoardingNavigateToWelcome());
   }
 
   void onPageChanged(int index) {

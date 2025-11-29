@@ -7,65 +7,79 @@ class CustomTextField extends StatelessWidget {
   final String hintText;
   final String? Function(String?)? validator;
   final bool obscureText;
-  final IconData? suffixIcon;
+  final Widget? suffixIcon;
+  final Widget? prefixIcon;
   final VoidCallback? onSuffixIcon;
   final TextInputType keyboardType;
+  final Color? backgroundColor;
+  final bool hasBorder;
 
   const CustomTextField({
     super.key,
     required this.controller,
     required this.hintText,
-    this.obscureText = false,
     this.validator,
+    this.obscureText = false,
     this.suffixIcon,
+    this.prefixIcon,
     this.onSuffixIcon,
     this.keyboardType = TextInputType.text,
+    this.backgroundColor,
+    this.hasBorder = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(context.screenWidth * 0.04);
+    final borderSide = hasBorder
+        ? const BorderSide(color: AppColors.text30Color)
+        : BorderSide.none;
 
-    final textStyle = TextStyle(
-      fontSize: context.getResponsiveFontSize(16, minSize: 14, maxSize: 18),
-    );
-
-    final hintStyle = TextStyle(
-      color: Colors.grey,
-      fontSize: context.getResponsiveFontSize(15, minSize: 13, maxSize: 17),
-      fontWeight: FontWeight.w500,
-    );
+    final borderRadius = BorderRadius.circular(12);
 
     return TextFormField(
       controller: controller,
-      style: textStyle,
+      style: TextStyle(
+        fontSize: context.getResponsiveFontSize(14, minSize: 10, maxSize: 16),
+      ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: hintStyle,
+        hintStyle: TextStyle(
+          color: Colors.grey[400],
+          fontSize: context.getResponsiveFontSize(14, minSize: 10, maxSize: 16),
+          fontWeight: FontWeight.w400,
+        ),
         filled: true,
-        fillColor: const Color(0xffFDFDFF),
-        border: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.text30Color),
+        fillColor: backgroundColor ?? Colors.grey[100],
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 20,
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius: borderRadius,
+          borderSide: borderSide,
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColors.text30Color),
           borderRadius: borderRadius,
+          borderSide: borderSide,
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColors.primaryColor),
           borderRadius: borderRadius,
+          borderSide: hasBorder
+              ? const BorderSide(color: AppColors.primaryColor)
+              : BorderSide.none,
         ),
         errorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.red),
           borderRadius: borderRadius,
+          borderSide: const BorderSide(color: Colors.red),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.red),
           borderRadius: borderRadius,
+          borderSide: const BorderSide(color: Colors.red),
         ),
-        suffixIcon: suffixIcon != null
-            ? IconButton(onPressed: onSuffixIcon, icon: Icon(suffixIcon))
-            : null,
+
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
       ),
       obscureText: obscureText,
       validator: validator,

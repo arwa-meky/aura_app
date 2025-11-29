@@ -3,10 +3,12 @@ import 'package:aura_project/fratuers/compelete_profile/ui/complete_profile_scre
 import 'package:aura_project/fratuers/home/home_screen.dart';
 import 'package:aura_project/fratuers/login/ui/forget_password_screen.dart';
 import 'package:aura_project/fratuers/login/ui/login_screen.dart';
-import 'package:aura_project/fratuers/login/ui/reset_password_screen.dart';
+import 'package:aura_project/fratuers/login/ui/new_password_screen.dart';
+import 'package:aura_project/fratuers/login/ui/verify_resetcode_creen.dart';
 import 'package:aura_project/fratuers/on_boarding/ui/on_boarding_screen.dart';
+import 'package:aura_project/fratuers/on_boarding/ui/welcome_screen.dart';
 import 'package:aura_project/fratuers/register/ui/register_screen.dart';
-import 'package:aura_project/fratuers/register/ui/validate_otp_screen.dart';
+import 'package:aura_project/fratuers/vildate_otp/ui/validate_otp_screen.dart';
 import 'package:aura_project/fratuers/splach/ui/splach_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -25,14 +27,10 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (context) => const ForgotPasswordScreen(),
         );
-      case Routes.resetPassword:
-        return MaterialPageRoute(
-          builder: (context) => const ResetPasswordScreen(),
-        );
+
       case Routes.validateOtp:
-        final email = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (_) => ValidateOtpScreen(email: email),
+          builder: (_) => ValidateOtpScreen(),
           settings: settings,
         );
       case Routes.register:
@@ -42,6 +40,19 @@ class AppRouter {
       case Routes.completeProfile:
         return MaterialPageRoute(
           builder: (context) => const CompleteProfileScreen(),
+        );
+      case Routes.welcome:
+        return MaterialPageRoute(builder: (_) => const WelcomeScreen());
+      case Routes.verifyResetCode:
+        return MaterialPageRoute(
+          builder: (_) => const VerifyResetCodeScreen(),
+          settings: settings,
+        );
+
+      case Routes.newPassword:
+        return MaterialPageRoute(
+          builder: (_) => const NewPasswordScreen(),
+          settings: settings,
         );
 
       default:

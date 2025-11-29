@@ -36,6 +36,16 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     return null;
   }
 
+  void resendCode() async {
+    emit(ForgotPasswordLoading());
+    try {
+      await _apiService.forgotPassword(email: emailController.text);
+      emit(ForgotPasswordSuccess());
+    } catch (e) {
+      emit(ForgotPasswordFailure(e.toString()));
+    }
+  }
+
   @override
   Future<void> close() {
     emailController.dispose();

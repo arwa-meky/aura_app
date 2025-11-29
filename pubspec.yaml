@@ -36,11 +36,13 @@ dependencies:
   cupertino_icons: ^1.0.8
   carousel_slider: ^5.1.1
   smooth_page_indicator: ^1.2.1
-  dio: ^5.8.0+1
+  dio: ^5.7.0
   pretty_dio_logger: ^1.4.0
   shared_preferences: ^2.5.3
   flutter_bloc: ^9.1.1
   google_sign_in: ^6.2.1
+  pinput: ^4.0.0
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:

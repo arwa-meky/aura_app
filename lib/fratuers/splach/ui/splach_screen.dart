@@ -17,8 +17,8 @@ class SplachScreen extends StatelessWidget {
         listener: (context, state) {
           if (state is SplashNavigateToOnBoarding) {
             context.pushNamedAndRemoveAll(Routes.onBoarding);
-          } else if (state is SplashNavigateToLogin) {
-            context.pushNamedAndRemoveAll(Routes.login);
+          } else if (state is SplashNavigateToWelcome) {
+            context.pushNamedAndRemoveAll(Routes.welcome);
           } else if (state is SplashNavigateToHome) {
             context.pushNamedAndRemoveAll(Routes.home);
           }

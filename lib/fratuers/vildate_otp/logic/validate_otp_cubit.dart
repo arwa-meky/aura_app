@@ -12,7 +12,7 @@ class ValidateOtpCubit extends Cubit<ValidateOtpState> {
   final AuthApiService _apiService = AuthApiService();
   final TextEditingController otpController = TextEditingController();
 
-  void verifyOtp({required String email}) async {
+  void verifyOtp({required String email, required bool isSignup}) async {
     if (otpController.text.isEmpty || otpController.text.length < 4) {
       emit(ValidateOtpFailure("Please enter a valid OTP"));
       return;
@@ -32,9 +32,7 @@ class ValidateOtpCubit extends Cubit<ValidateOtpState> {
         await LocalStorage.saveToken(token);
       }
 
-      final String? nextStep = response.data['data']?['nextStep'];
-
-      if (nextStep != null && nextStep.contains("complete-profile")) {
+      if (isSignup) {
         emit(ValidateOtpNavigateToCompleteProfile());
       } else {
         emit(ValidateOtpSuccess());

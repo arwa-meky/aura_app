@@ -5,4 +5,4 @@ class OnBoardingInitial extends OnBoardingState {
   OnBoardingInitial(this.currentPage);
 }
 
-class OnBoardingNavigateToLogin extends OnBoardingState {}
+class OnBoardingNavigateToWelcome extends OnBoardingState {}

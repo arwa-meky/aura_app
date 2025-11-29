@@ -17,8 +17,8 @@ class OnBoardingScreen extends StatelessWidget {
       create: (context) => OnBoardingCubit(),
       child: BlocConsumer<OnBoardingCubit, OnBoardingState>(
         listener: (context, state) {
-          if (state is OnBoardingNavigateToLogin) {
-            context.pushNamedAndRemoveAll(Routes.login);
+          if (state is OnBoardingNavigateToWelcome) {
+            context.pushNamedAndRemoveAll(Routes.welcome);
           }
         },
         builder: (context, state) {

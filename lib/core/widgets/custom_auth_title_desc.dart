@@ -25,7 +25,6 @@ class CustomAuthTitleDesc extends StatelessWidget {
               maxSize: 28,
             ),
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         SizedBox(height: context.usableHeight * 0.01),

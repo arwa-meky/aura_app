@@ -7,6 +7,8 @@ class Routes {
   static const String register = '/register';
   static const String home = '/home';
   static const String validateOtp = '/validateOtp';
-  static const String resetPassword = '/resetPassword';
   static const String completeProfile = '/completeProfile';
+  static const String welcome = '/welcome';
+  static const String verifyResetCode = '/verifyResetCode';
+  static const String newPassword = '/newPassword';
 }

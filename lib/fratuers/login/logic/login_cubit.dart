@@ -15,8 +15,9 @@ class LoginCubit extends Cubit<LoginState> {
   final formKey = GlobalKey<FormState>();
 
   void loginWithEmail() async {
-    if (formKey.currentState == null || !formKey.currentState!.validate())
+    if (formKey.currentState == null || !formKey.currentState!.validate()) {
       return;
+    }
 
     emit(LoginLoading());
     try {
@@ -52,19 +53,15 @@ class LoginCubit extends Cubit<LoginState> {
           await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
-      if (idToken == null) {
-        throw Exception(
-          "Google ID Token was null. Please check serverClientId.",
-        );
-      }
+      if (idToken == null) throw Exception("Google ID Token was null");
 
       final response = await _apiService.loginWithGoogle(
         googleIdToken: idToken,
       );
 
       final String token = response.data['token'];
-      await LocalStorage.saveToken(token);
 
+      await LocalStorage.saveToken(token);
       emit(LoginGoogleSuccess());
     } on DioException catch (e) {
       emit(LoginGoogleFailure(handleDioError(e, "Google login failed")));

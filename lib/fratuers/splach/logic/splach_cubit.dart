@@ -15,7 +15,7 @@ class SplashCubit extends Cubit<SplashState> {
       } else {
         final bool hasSeenOnBoarding = LocalStorage.getHasSeenOnBoarding();
         if (hasSeenOnBoarding) {
-          emit(SplashNavigateToLogin());
+          emit(SplashNavigateToWelcome());
         } else {
           emit(SplashNavigateToOnBoarding());
         }

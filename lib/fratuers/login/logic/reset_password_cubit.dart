@@ -10,8 +10,9 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
 
   final AuthApiService _apiService = AuthApiService();
 
-  final TextEditingController tokenController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
+  String? token;
+  String? email;
+
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
@@ -22,6 +23,12 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
     if (formKey.currentState == null || !formKey.currentState!.validate()) {
       return;
     }
+
+    if (token == null || email == null) {
+      emit(ResetPasswordFailure("Missing token or email info"));
+      return;
+    }
+
     if (passwordController.text != confirmPasswordController.text) {
       emit(ResetPasswordFailure("Passwords do not match"));
       return;
@@ -30,8 +37,8 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
     emit(ResetPasswordLoading());
     try {
       await _apiService.resetPassword(
-        token: tokenController.text.trim(),
-        email: emailController.text.trim(),
+        token: token!,
+        email: email!,
         newPassword: passwordController.text,
         confirmPassword: confirmPasswordController.text,
       );
@@ -44,28 +51,15 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
     }
   }
 
-  static String? tokenValidator(String? value) {
-    if (value == null || value.isEmpty)
-      return "Please enter the token from your email";
-    return null;
-  }
-
-  static String? emailValidator(String? value) {
-    if (value == null || !value.contains('@'))
-      return "Please enter a valid email";
-    return null;
-  }
-
   static String? passwordValidator(String? value) {
-    if (value == null || value.length < 6)
+    if (value == null || value.length < 6) {
       return "Password too short (min 6 chars)";
+    }
     return null;
   }
 
   @override
   Future<void> close() {
-    tokenController.dispose();
-    emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     return super.close();

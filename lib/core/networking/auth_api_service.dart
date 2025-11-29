@@ -105,9 +105,9 @@ class AuthApiService {
   }
 
   Future<Response> loginWithGoogle({required String googleIdToken}) async {
-    return await DioFactory.getData(
+    return await DioFactory.postData(
       path: ApiConstants.loginWithGoogle,
-      token: googleIdToken,
+      data: {'idToken': googleIdToken},
     );
   }
 }
