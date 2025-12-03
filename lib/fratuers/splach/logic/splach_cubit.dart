@@ -1,4 +1,4 @@
-import 'package:aura_project/core/helpers/local_storage.dart';
+import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:aura_project/fratuers/splach/logic/splach_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

@@ -115,7 +115,7 @@ class OnBoardingScreen extends StatelessWidget {
                   ),
 
                   Expanded(
-                    flex: 3,
+                    flex: 4,
                     child: Container(
                       width: double.infinity,
                       decoration: const BoxDecoration(
@@ -208,7 +208,7 @@ class OnBoardingScreen extends StatelessWidget {
                                     isLastPage ? "Get Started" : "Next",
                                     style: TextStyle(
                                       fontSize: context.getResponsiveFontSize(
-                                        16,
+                                        10,
                                         minSize: 14,
                                         maxSize: 18,
                                       ),

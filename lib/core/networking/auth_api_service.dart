@@ -1,4 +1,4 @@
-import 'package:aura_project/core/helpers/local_storage.dart';
+import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:aura_project/core/networking/api_constants.dart';
 import 'package:aura_project/core/networking/dio_factory.dart';
 import 'package:dio/dio.dart';
@@ -20,6 +20,7 @@ class AuthApiService {
     required String email,
     required String password,
     required String passwordConfirm,
+    required String phoneNumber,
     required String role,
   }) async {
     return await DioFactory.postData(
@@ -30,6 +31,7 @@ class AuthApiService {
         'email': email,
         'password': password,
         'passwordConfirm': passwordConfirm,
+        'mobilePhone': phoneNumber,
         'role': role,
       },
     );
@@ -108,6 +110,17 @@ class AuthApiService {
     return await DioFactory.postData(
       path: ApiConstants.loginWithGoogle,
       data: {'idToken': googleIdToken},
+    );
+  }
+
+  Future<Response> linkDevice({
+    required String deviceId,
+    required String deviceName,
+  }) async {
+    return await DioFactory.postData(
+      path: ApiConstants.linkDevice,
+      data: {'deviceId': deviceId, 'deviceName': deviceName},
+      token: LocalStorage.token,
     );
   }
 }

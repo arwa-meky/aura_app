@@ -26,7 +26,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         body: BlocConsumer<CompleteProfileCubit, CompleteProfileState>(
           listener: (context, state) {
             if (state is CompleteProfileSuccess) {
-              context.pushNamedAndRemoveAll(Routes.home);
+              context.pushNamedAndRemoveAll(Routes.bluetoothConnect);
             } else if (state is CompleteProfileFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -77,7 +77,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     SizedBox(height: context.usableHeight * 0.05),
 
                     DropdownButtonFormField<String>(
-                      value: cubit.selectedGender,
+                      initialValue: cubit.selectedGender,
                       decoration: inputDecoration.copyWith(
                         labelText: "Gender",
                         labelStyle: TextStyle(

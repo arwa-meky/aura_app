@@ -1,12 +1,14 @@
 import 'package:aura_project/core/router/routes.dart';
+import 'package:aura_project/fratuers/bluetooth/ui/bluetooth_screen.dart';
 import 'package:aura_project/fratuers/compelete_profile/ui/complete_profile_screen.dart';
-import 'package:aura_project/fratuers/home/home_screen.dart';
+import 'package:aura_project/fratuers/home/ui/home_screen.dart';
 import 'package:aura_project/fratuers/login/ui/forget_password_screen.dart';
 import 'package:aura_project/fratuers/login/ui/login_screen.dart';
 import 'package:aura_project/fratuers/login/ui/new_password_screen.dart';
 import 'package:aura_project/fratuers/login/ui/verify_resetcode_creen.dart';
 import 'package:aura_project/fratuers/on_boarding/ui/on_boarding_screen.dart';
 import 'package:aura_project/fratuers/on_boarding/ui/welcome_screen.dart';
+import 'package:aura_project/fratuers/profile/ui/profile_screen.dart';
 import 'package:aura_project/fratuers/register/ui/register_screen.dart';
 import 'package:aura_project/fratuers/vildate_otp/ui/validate_otp_screen.dart';
 import 'package:aura_project/fratuers/splach/ui/splach_screen.dart';
@@ -54,6 +56,11 @@ class AppRouter {
           builder: (_) => const NewPasswordScreen(),
           settings: settings,
         );
+      case Routes.bluetoothConnect:
+        return MaterialPageRoute(builder: (_) => const BluetoothScreen());
+
+      case Routes.profile:
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
 
       default:
         return MaterialPageRoute(builder: (context) => Container());

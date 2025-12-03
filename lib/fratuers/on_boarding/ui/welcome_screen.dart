@@ -27,7 +27,7 @@ class WelcomeScreen extends StatelessWidget {
               width: double.infinity,
               child: Column(
                 children: [
-                  SizedBox(height: context.screenHeight * 0.04),
+                  SizedBox(height: context.screenHeight * 0.02),
 
                   Image.asset(
                     'assets/images/logo_image.png',
@@ -63,7 +63,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(height: context.screenHeight * 0.41),
+                  SizedBox(height: context.screenHeight * 0.4),
                 ],
               ),
             ),

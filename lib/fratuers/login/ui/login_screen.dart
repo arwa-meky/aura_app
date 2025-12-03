@@ -206,7 +206,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                           () => _isRememberMeChecked = v!,
                                         ),
                                       ),
-                                      const Text("Remember Me"),
+                                      const Text(
+                                        "Remember Me",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
                                     ],
                                   ),
                                   GestureDetector(
@@ -218,6 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       style: TextStyle(
                                         color: AppColors.primaryColor,
                                         fontWeight: FontWeight.w600,
+                                        fontSize: 11,
                                       ),
                                     ),
                                   ),

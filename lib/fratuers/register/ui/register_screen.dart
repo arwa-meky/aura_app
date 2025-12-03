@@ -2,6 +2,7 @@ import 'package:aura_project/core/helpers/extension.dart';
 import 'package:aura_project/core/router/routes.dart';
 import 'package:aura_project/core/style/colors.dart';
 import 'package:aura_project/core/widgets/custom_button.dart';
+import 'package:aura_project/core/widgets/custom_input_label.dart';
 import 'package:aura_project/core/widgets/custom_text_field.dart';
 import 'package:aura_project/core/widgets/custom_soical_button.dart';
 import 'package:aura_project/fratuers/register/logic/register_cubit.dart';
@@ -31,7 +32,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (state is RegisterSuccess) {
             context.pushNamed(
               Routes.validateOtp,
-              arguments: context.read<RegisterCubit>().emailController.text,
+              arguments: {
+                'email': context.read<RegisterCubit>().emailController.text,
+                'isSignup': true,
+              },
             );
           } else if (state is RegisterFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -225,6 +229,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                       ),
+                      SizedBox(height: context.usableHeight * 0.02),
+
+                      BuildInputLabel(
+                        text: "Phone Number",
+                        icon: Icons.phone_outlined,
+                      ),
+                      CustomTextField(
+                        controller: cubit.phoneController,
+                        hintText: "Enter your phone number",
+                        keyboardType: TextInputType.phone,
+                        validator: RegisterCubit.phoneValidator,
+                      ),
+
                       SizedBox(height: context.usableHeight * 0.02),
 
                       Row(

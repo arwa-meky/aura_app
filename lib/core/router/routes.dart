@@ -11,4 +11,6 @@ class Routes {
   static const String welcome = '/welcome';
   static const String verifyResetCode = '/verifyResetCode';
   static const String newPassword = '/newPassword';
+  static const String bluetoothConnect = '/bluetoothConnect';
+  static const String profile = '/profile';
 }

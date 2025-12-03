@@ -15,6 +15,7 @@ class RegisterCubit extends Cubit<RegisterState> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
   final TextEditingController roleController = TextEditingController(
     text: "patient",
   );
@@ -38,6 +39,7 @@ class RegisterCubit extends Cubit<RegisterState> {
         email: emailController.text,
         password: passwordController.text,
         passwordConfirm: confirmPasswordController.text,
+        phoneNumber: phoneController.text,
         role: roleController.text,
       );
       emit(RegisterSuccess());
@@ -80,6 +82,16 @@ class RegisterCubit extends Cubit<RegisterState> {
     return null;
   }
 
+  static String? phoneValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return "Please enter your phone number";
+    }
+    if (value.length < 10) {
+      return "Please enter a valid phone number";
+    }
+    return null;
+  }
+
   @override
   Future<void> close() {
     firstNameController.dispose();
@@ -87,6 +99,7 @@ class RegisterCubit extends Cubit<RegisterState> {
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+    phoneController.dispose();
     roleController.dispose();
     return super.close();
   }
