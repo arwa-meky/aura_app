@@ -127,8 +127,24 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     emit(BluetoothConnecting());
 
     try {
-      await device.connect(autoConnect: true);
+      await device.connect(autoConnect: false);
+
       connectedDevice = device;
+
+      _dataSubscription?.cancel();
+
+      _dataSubscription = device.connectionState.listen((
+        BluetoothConnectionState state,
+      ) async {
+        if (state == BluetoothConnectionState.disconnected) {
+          print("Device disconnected! Attempting auto-reconnect...");
+          try {
+            await device.connect(autoConnect: true);
+          } catch (e) {
+            print("Auto-reconnect failed: $e");
+          }
+        }
+      });
 
       final String deviceId = device.remoteId.toString();
       final String deviceName = device.platformName;
