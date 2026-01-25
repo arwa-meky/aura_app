@@ -12,6 +12,8 @@ class CompleteProfileCubit extends Cubit<CompleteProfileState> {
 
   final TextEditingController ageController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
+  TextEditingController dobController = TextEditingController();
+  final TextEditingController hightController = TextEditingController();
 
   String selectedGender = "Male";
 

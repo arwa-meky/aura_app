@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:aura_project/core/constants.dart';
 import 'package:aura_project/core/helpers/storage/hive_storage_service.dart';
 import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:aura_project/core/networking/auth_api_service.dart';
@@ -21,7 +22,6 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   StreamSubscription? _dataSubscription;
   BluetoothDevice? connectedDevice;
   List<ScanResult> _scanResults = [];
-
   Timer? _simulationTimer; //for demo
 
   void startSimulation() {
@@ -48,7 +48,8 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     final int o2 = 95 + random.nextInt(5);
     final double temp = 36.5 + (random.nextInt(10) / 10);
 
-    final bool isSOS = random.nextInt(100) > 98;
+    final bool isSOS = random.nextInt(100) > 89;
+    final bool isFallDetected = random.nextInt(100) > 89;
 
     final data = HealthReadingModel(
       userId: LocalStorage.getUserId ?? "demo_user",
@@ -61,15 +62,28 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       lon: 31.0,
       position: 0,
       sos: isSOS ? 1 : 0,
-      shake: 0,
+      shake: isFallDetected ? 1 : 0,
     );
 
     await HiveStorageService.saveReading(data);
 
     SocketService.sendHealthData(data.toBackendJson());
 
-    if (data.isSOSActive) {
+    if (isSOS) {
+      NotificationService().startEmergencyCountdown(
+        title: "SOS Alert",
+        lat: data.lat.toString(),
+        lon: data.lon.toString(),
+      );
+
       emit(BluetoothEmergencyState("🚨 SOS Simulated Alert!"));
+    } else if (isFallDetected) {
+      NotificationService().startEmergencyCountdown(
+        title: "Shake Alert!",
+        lat: data.lat.toString(),
+        lon: data.lon.toString(),
+      );
+      emit(BluetoothEmergencyState("🚨 Shake Simulated Alert!"));
     } else {
       emit(BluetoothDataReceived(data));
     }
@@ -154,6 +168,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
           deviceId: deviceId,
           deviceName: deviceName,
         );
+        print("Device linked to backend successfully");
       } catch (e) {
         print("Link Warning: $e");
       }
@@ -177,21 +192,84 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     try {
       List<BluetoothService> services = await device.discoverServices();
 
-      for (var service in services) {
-        for (var characteristic in service.characteristics) {
-          if (characteristic.properties.notify) {
-            await characteristic.setNotifyValue(true);
+      BluetoothCharacteristic? txChar;
+      BluetoothCharacteristic? rxChar;
 
-            _dataSubscription = characteristic.onValueReceived.listen((value) {
-              _processData(value);
-            });
+      for (var service in services) {
+        if (service.uuid.toString().toLowerCase() == UART_SERVICE_UUID) {
+          for (var c in service.characteristics) {
+            if (c.uuid.toString().toLowerCase() == UART_TX_UUID) {
+              txChar = c;
+            }
+            if (c.uuid.toString().toLowerCase() == UART_RX_UUID) {
+              rxChar = c;
+            }
           }
         }
       }
+
+      if (txChar == null || rxChar == null) {
+        print("❌ UART characteristics not found");
+        return;
+      }
+
+      await txChar.setNotifyValue(true);
+
+      _dataSubscription?.cancel();
+      _dataSubscription = txChar.onValueReceived.listen((value) {
+        print("📩 RAW DATA: $value");
+        _processData(value);
+      });
+      await rxChar.write(utf8.encode("START"), withoutResponse: true);
+
+      print("✅ UART Connected & Streaming Started");
     } catch (e) {
-      print("Service Discovery Error: $e");
+      print("❌ BLE Error: $e");
     }
   }
+
+  // void _discoverAndSubscribe(BluetoothDevice device) async {
+  //   try {
+  //     List<BluetoothService> services = await device.discoverServices();
+
+  //     for (var service in services) {
+  //       print("🟦 SERVICE UUID: ${service.uuid}");
+
+  //       for (var c in service.characteristics) {
+  //         print(
+  //           "   🔹 CHAR UUID: ${c.uuid} | "
+  //           "notify=${c.properties.notify} | "
+  //           "read=${c.properties.read} | "
+  //           "write=${c.properties.write}",
+  //         );
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Service Discovery Error: $e");
+  //   }
+  // }
+
+  // void _discoverAndSubscribe(BluetoothDevice device) async {
+  //   try {
+  //     List<BluetoothService> services = await device.discoverServices();
+
+  //     for (var service in services) {
+  //       print("🟦 SERVICE UUID: ${service.uuid}");
+
+  //       for (var characteristic in service.characteristics) {
+  //         if (characteristic.properties.notify) {
+  //           await characteristic.setNotifyValue(true);
+
+  //           _dataSubscription = characteristic.onValueReceived.listen((value) {
+  //             _processData(value);
+  //           });
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Service Discovery Error: $e");
+  //   }
+  // }
 
   void _processData(List<int> bytes) async {
     try {
@@ -200,10 +278,13 @@ class BluetoothCubit extends Cubit<BluetoothState> {
         jsonString = jsonString.substring(1, jsonString.length - 1);
       }
       jsonString = jsonString.replaceAll(r'\"', '"');
+      print("clanedJson:$jsonString");
 
       final Map<String, dynamic> jsonData = jsonDecode(jsonString);
-      String currentUserId = LocalStorage.getUserId ?? "unknown";
-
+      String? currentUserId = LocalStorage.getUserId;
+      if (currentUserId == null) {
+        return;
+      }
       final HealthReadingModel data = HealthReadingModel.fromWatchJson(
         jsonData,
         currentUserId,
@@ -214,16 +295,18 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       SocketService.sendHealthData(data.toBackendJson());
 
       if (data.isSOSActive) {
-        NotificationService().showEmergencyNotification(
+        NotificationService().startEmergencyCountdown(
           title: "🚨 SOS ALERT!",
-          body: "Patient pushed the SOS button. Please check immediately!",
+          lat: data.lat.toString(),
+          lon: data.lon.toString(),
         );
 
         emit(BluetoothEmergencyState("🚨 SOS Alert! Patient needs help!"));
       } else if (data.isFallDetected) {
-        NotificationService().showEmergencyNotification(
+        NotificationService().startEmergencyCountdown(
           title: "⚠️ FALL DETECTED!",
-          body: "A fall has been detected. Please check the patient!",
+          lat: data.lat.toString(),
+          lon: data.lon.toString(),
         );
 
         emit(BluetoothEmergencyState("⚠️ Fall Detected! Check the patient!"));
@@ -244,6 +327,38 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     }
   }
 
+  List<dynamic> myPairedDevices = [];
+
+  Future<void> fetchMyDevices() async {
+    try {
+      await _apiService.getPairedDevices();
+      if (state is BluetoothConnected) {
+        emit(BluetoothConnected((state as BluetoothConnected).deviceName));
+      } else {
+        emit(BluetoothInitial());
+      }
+      print("📱 Devices fetched: ${myPairedDevices.length}");
+    } catch (e) {
+      print("❌ Error fetching devices: $e");
+    }
+  }
+
+  Future<void> removeDevice(String deviceId) async {
+    try {
+      await _apiService.unlinkDevice(deviceId: deviceId);
+
+      if (connectedDevice?.remoteId.toString() == deviceId) {
+        close();
+      }
+
+      await fetchMyDevices();
+
+      print("🗑️ Device deleted successfully");
+    } catch (e) {
+      print("❌ Error deleting device: $e");
+    }
+  }
+
   Future<bool> _requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.bluetoothScan,
@@ -253,14 +368,15 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     return statuses.values.every((status) => status.isGranted);
   }
 
-  @override
-  Future<void> close() {
+  void stopEverything() {
     FlutterBluePlus.stopScan();
     _scanSubscription?.cancel();
     _dataSubscription?.cancel();
+    connectedDevice = null;
     connectedDevice?.disconnect();
     SocketService.disconnect();
     _simulationTimer?.cancel();
-    return super.close();
+    NotificationService().stopEmergencySequence();
+    emit(BluetoothInitial());
   }
 }

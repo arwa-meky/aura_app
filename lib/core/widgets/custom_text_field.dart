@@ -31,7 +31,7 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderSide = hasBorder
-        ? const BorderSide(color: AppColors.text30Color)
+        ? const BorderSide(color: Color(0xffE0E0E0))
         : BorderSide.none;
 
     final borderRadius = BorderRadius.circular(12);
@@ -40,11 +40,12 @@ class CustomTextField extends StatelessWidget {
       controller: controller,
       style: TextStyle(
         fontSize: context.getResponsiveFontSize(14, minSize: 10, maxSize: 16),
+        fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
-          color: Colors.grey[400],
+          color: Color(0xffACACAC),
           fontSize: context.getResponsiveFontSize(14, minSize: 10, maxSize: 16),
           fontWeight: FontWeight.w400,
         ),
@@ -71,11 +72,11 @@ class CustomTextField extends StatelessWidget {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: const BorderSide(color: Color(0xffD32F2F)),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: borderRadius,
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: const BorderSide(color: Color(0xffD32F2F)),
         ),
 
         prefixIcon: prefixIcon,

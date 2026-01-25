@@ -12,7 +12,7 @@ class LogoutCubit extends Cubit<LogoutState> {
     emit(LogoutLoading());
 
     try {
-      await _apiService.logout();
+      await _apiService.logout().timeout(const Duration(seconds: 3));
       print("✅ Server logout success");
     } catch (e) {
       print(

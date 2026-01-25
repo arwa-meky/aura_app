@@ -61,13 +61,23 @@ class DioFactory {
     return response;
   }
 
-  static Future<Response> getData({required String path, String? token}) async {
+  static Future<Response> getData({
+    required String path,
+    Map<String, dynamic>? queryParameters,
+    String? token,
+  }) async {
     Map<String, dynamic> headers = {'Accept': 'application/json'};
+
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
 
-    final response = await dio.get(path, options: Options(headers: headers));
+    final response = await dio.get(
+      path,
+      queryParameters: queryParameters,
+      options: Options(headers: headers),
+    );
+
     return response;
   }
 

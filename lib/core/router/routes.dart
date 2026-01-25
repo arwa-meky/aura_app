@@ -13,4 +13,5 @@ class Routes {
   static const String newPassword = '/newPassword';
   static const String bluetoothConnect = '/bluetoothConnect';
   static const String profile = '/profile';
+  static const String bluetoothPermission = '/bluetoothPermission';
 }

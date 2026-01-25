@@ -37,6 +37,7 @@ class BuildSocialButton extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.text100Color,
                 fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
             ),
           ],

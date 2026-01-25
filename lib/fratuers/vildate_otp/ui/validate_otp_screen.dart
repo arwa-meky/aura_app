@@ -20,6 +20,7 @@ class ValidateOtpScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => ValidateOtpCubit(),
       child: Scaffold(
+        backgroundColor: const Color(0xffF5F8FF),
         body: BlocConsumer<ValidateOtpCubit, ValidateOtpState>(
           listener: (context, state) {
             if (state is ValidateOtpSuccess) {
@@ -31,6 +32,10 @@ class ValidateOtpScreen extends StatelessWidget {
                 SnackBar(
                   content: Text(state.errorMessage),
                   backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               );
             }
@@ -77,6 +82,8 @@ class ValidateOtpScreen extends StatelessWidget {
                     controller: cubit.otpController,
                     hintText: "Enter 6-digit Code",
                     keyboardType: TextInputType.number,
+                    hasBorder: true,
+                    backgroundColor: const Color(0xffEEEEEE),
                   ),
 
                   SizedBox(height: context.usableHeight * 0.05),

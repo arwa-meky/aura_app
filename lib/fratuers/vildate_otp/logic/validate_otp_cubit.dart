@@ -4,6 +4,7 @@ import 'package:aura_project/fratuers/login/logic/login_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'validate_otp_state.dart';
 
 class ValidateOtpCubit extends Cubit<ValidateOtpState> {
@@ -26,10 +27,27 @@ class ValidateOtpCubit extends Cubit<ValidateOtpState> {
         otp: otpController.text,
       );
 
-      if (response.data['data'] != null &&
-          response.data['data']['token'] != null) {
-        final String token = response.data['data']['token'];
+      if (response.data["status"] == 'success') {
+        String token = response.data['data']['token'];
+
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+
+        print("🔓 Decoded Data: $decodedToken");
+
+        String userId =
+            decodedToken['id'] ??
+            decodedToken['_id'] ??
+            decodedToken['sub'] ??
+            "";
+
         await LocalStorage.saveToken(token);
+
+        if (userId.isNotEmpty) {
+          await LocalStorage.saveUserId(userId);
+          print("✅ User ID Saved: $userId");
+        } else {
+          print("❌ Could not find User ID in token!");
+        }
       }
 
       if (isSignup) {

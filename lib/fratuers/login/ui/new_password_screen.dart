@@ -55,6 +55,10 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
               SnackBar(
                 content: Text(state.errorMessage),
                 backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
           }
@@ -63,7 +67,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
           final cubit = context.read<ResetPasswordCubit>();
 
           return Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: const Color(0xffF5F8FF),
             body: SafeArea(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
@@ -112,7 +116,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "Create a new password for your Aura account. Please choose a strong and secure password.",
+                        "Create a new password for your Aura \naccount. Please choose a strong and \nsecure password.",
                         style: TextStyle(
                           fontSize: context.getResponsiveFontSize(
                             14,
@@ -129,13 +133,14 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       BuildInputLabel(
                         text: "New Password",
                         icon: Icons.lock_outline,
+                        iconColor: AppColors.text100Color,
                       ),
                       CustomTextField(
                         controller: cubit.passwordController,
                         hintText: "Enter new password",
                         obscureText: isPasswordObscure,
                         validator: ResetPasswordCubit.passwordValidator,
-                        backgroundColor: const Color(0xffFDFDFF),
+                        backgroundColor: const Color(0xffEEEEEE),
                         hasBorder: true,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -155,12 +160,13 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       BuildInputLabel(
                         text: "Confirm Password",
                         icon: Icons.lock_outline,
+                        iconColor: AppColors.text100Color,
                       ),
                       CustomTextField(
                         controller: cubit.confirmPasswordController,
                         hintText: "Confirm your new password",
                         obscureText: isConfirmObscure,
-                        backgroundColor: const Color(0xffFDFDFF),
+                        backgroundColor: const Color(0xffEEEEEE),
                         hasBorder: true,
                         validator: (val) {
                           if (val != cubit.passwordController.text) {

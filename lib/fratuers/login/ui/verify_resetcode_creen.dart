@@ -66,9 +66,13 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
         listener: (context, state) {
           if (state is ForgotPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Code resent successfully!"),
+              SnackBar(
+                content: const Text("Code resent successfully!"),
                 backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
           } else if (state is ForgotPasswordFailure) {
@@ -76,6 +80,10 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
               SnackBar(
                 content: Text(state.errorMessage),
                 backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
           }
@@ -128,7 +136,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                       Text(
                         "We sent a 6-digit code to your email.\nPlease enter it below to continue.",
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: AppColors.textBodyColor,
                           height: 1.5,
                         ),
@@ -147,7 +155,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                           if (value.length < 6) return "Code must be 6 digits";
                           return null;
                         },
-                        backgroundColor: const Color(0xffFDFDFF),
+                        backgroundColor: const Color(0xffEEEEEE),
                         hasBorder: true,
                       ),
 
@@ -187,7 +195,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                         children: [
                           const Text(
                             "Didn't receive the code? ",
-                            style: TextStyle(color: Colors.black, fontSize: 12),
+                            style: TextStyle(color: Colors.black, fontSize: 14),
                           ),
                           GestureDetector(
                             onTap: _start == 0
@@ -216,7 +224,7 @@ class _VerifyResetCodeScreenState extends State<VerifyResetCodeScreen> {
                                           ? AppColors.primaryColor
                                           : Colors.grey,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontSize: 14,
                                     ),
                                   ),
                           ),

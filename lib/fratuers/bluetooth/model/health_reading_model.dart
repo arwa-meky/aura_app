@@ -58,22 +58,63 @@ class HealthReadingModel extends HiveObject {
     this.isSynced = false,
   });
 
+  // factory HealthReadingModel.fromWatchJson(
+  //   Map<String, dynamic> json,
+  //   String userId,
+  // ) {
+  //   return HealthReadingModel(
+  //     userId: userId,
+  //     timestamp: DateTime.now().toIso8601String(),
+  //     heartRate: json['HR'] ?? 0,
+  //     oxygen: json['O2'] ?? 0,
+  //     temperature: (json['T'] ?? 0).toDouble(),
+  //     steps: json['ST'] ?? 0,
+  //     lat: (json['GPS'] != null ? json['GPS']['lat'] : 0.0).toDouble(),
+  //     lon: (json['GPS'] != null ? json['GPS']['lon'] : 0.0).toDouble(),
+  //     position: json['POS'] ?? 0,
+  //     sos: json['SOS'] ?? 0,
+  //     shake: json['SHK'] ?? 0,
+  //     isSynced: false,
+  //   );
+  // }
+
   factory HealthReadingModel.fromWatchJson(
     Map<String, dynamic> json,
     String userId,
   ) {
+    int boolToInt(dynamic v) {
+      if (v is bool) return v ? 1 : 0;
+      if (v is int) return v;
+      return 0;
+    }
+
+    int toInt(dynamic v) {
+      if (v is num) return v.toInt();
+      return 0;
+    }
+
+    double toDouble(dynamic v) {
+      if (v is num) return v.toDouble();
+      return 0.0;
+    }
+
     return HealthReadingModel(
       userId: userId,
       timestamp: DateTime.now().toIso8601String(),
-      heartRate: json['HR'] ?? 0,
-      oxygen: json['O2'] ?? 0,
-      temperature: (json['T'] ?? 0).toDouble(),
-      steps: json['ST'] ?? 0,
-      lat: (json['GPS'] != null ? json['GPS']['lat'] : 0.0).toDouble(),
-      lon: (json['GPS'] != null ? json['GPS']['lon'] : 0.0).toDouble(),
-      position: json['POS'] ?? 0,
-      sos: json['SOS'] ?? 0,
-      shake: json['SHK'] ?? 0,
+
+      heartRate: toInt(json['HR']),
+      oxygen: toInt(json['O2']),
+      temperature: toDouble(json['T']),
+      steps: toInt(json['ST']),
+
+      lat: toDouble(json['GPS']?['lat']),
+      lon: toDouble(json['GPS']?['lon']),
+
+      position: toInt(json['POS']),
+
+      sos: boolToInt(json['SOS']),
+      shake: boolToInt(json['SHAKE'] ?? json['SHK']),
+
       isSynced: false,
     );
   }
@@ -96,21 +137,21 @@ class HealthReadingModel extends HiveObject {
     };
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': key,
-      'userId': userId,
-      'timestamp': timestamp,
-      'heartRate': heartRate,
-      'oxygen': oxygen,
-      'temperature': temperature,
-      'steps': steps,
-      'lat': lat,
-      'lon': lon,
-      'position': position,
-      'sos': sos,
-      'shake': shake,
-      'isSynced': isSynced ? 1 : 0,
-    };
-  }
+  // Map<String, dynamic> toMap() {
+  //   return {
+  //     'id': key,
+  //     'userId': userId,
+  //     'timestamp': timestamp,
+  //     'heartRate': heartRate,
+  //     'oxygen': oxygen,
+  //     'temperature': temperature,
+  //     'steps': steps,
+  //     'lat': lat,
+  //     'lon': lon,
+  //     'position': position,
+  //     'sos': sos,
+  //     'shake': shake,
+  //     'isSynced': isSynced ? 1 : 0,
+  //   };
+  // }
 }

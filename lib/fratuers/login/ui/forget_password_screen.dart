@@ -19,12 +19,15 @@ class ForgotPasswordScreen extends StatelessWidget {
         listener: (context, state) {
           if (state is ForgotPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
+              SnackBar(
+                content: const Text(
                   "password reset url sent successfully , Please check your email.",
                 ),
                 backgroundColor: Colors.green,
                 behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
 
@@ -39,7 +42,11 @@ class ForgotPasswordScreen extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage),
-                backgroundColor: Colors.red,
+                backgroundColor: Color(0xffD32F2F),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
           }
@@ -48,7 +55,7 @@ class ForgotPasswordScreen extends StatelessWidget {
           final cubit = context.read<ForgotPasswordCubit>();
 
           return Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: const Color(0xffF5F8FF),
             body: SafeArea(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
@@ -97,10 +104,10 @@ class ForgotPasswordScreen extends StatelessWidget {
                       ),
                       SizedBox(height: context.usableHeight * 0.015),
                       Text(
-                        "Please enter your email address to reset your password.",
+                        "Please enter your email address to \nreset your password.",
                         style: TextStyle(
                           fontSize: context.getResponsiveFontSize(
-                            14,
+                            16,
                             minSize: 12,
                             maxSize: 16,
                           ),
@@ -109,7 +116,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: context.usableHeight * 0.05),
+                      SizedBox(height: context.usableHeight * 0.04),
 
                       Row(
                         children: [
@@ -140,9 +147,11 @@ class ForgotPasswordScreen extends StatelessWidget {
                         hintText: "Enter Your Email",
                         keyboardType: TextInputType.emailAddress,
                         validator: ForgotPasswordCubit.emailValidator,
+                        hasBorder: true,
+                        backgroundColor: const Color(0xffEEEEEE),
                       ),
 
-                      SizedBox(height: context.usableHeight * 0.05),
+                      SizedBox(height: context.usableHeight * 0.04),
 
                       (state is ForgotPasswordLoading)
                           ? const Center(child: CircularProgressIndicator())

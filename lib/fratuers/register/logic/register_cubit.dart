@@ -19,12 +19,15 @@ class RegisterCubit extends Cubit<RegisterState> {
   final TextEditingController roleController = TextEditingController(
     text: "patient",
   );
+  String selectedCountryCode = '+20';
 
   final formKey = GlobalKey<FormState>();
 
   void register() async {
-    if (formKey.currentState == null || !formKey.currentState!.validate())
+    if (formKey.currentState == null || !formKey.currentState!.validate()) {
       return;
+    }
+    String fullPhoneNumber = "$selectedCountryCode${phoneController.text}";
 
     if (passwordController.text != confirmPasswordController.text) {
       emit(RegisterFailure("Passwords do not match"));
@@ -39,7 +42,7 @@ class RegisterCubit extends Cubit<RegisterState> {
         email: emailController.text,
         password: passwordController.text,
         passwordConfirm: confirmPasswordController.text,
-        phoneNumber: phoneController.text,
+        phoneNumber: fullPhoneNumber,
         role: roleController.text,
       );
       emit(RegisterSuccess());

@@ -31,7 +31,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
   static String? emailValidator(String? value) {
     if (value == null || !value.contains('@') || value.isEmpty) {
-      return "Please enter a valid email";
+      return "Wrong Email Address";
     }
     return null;
   }

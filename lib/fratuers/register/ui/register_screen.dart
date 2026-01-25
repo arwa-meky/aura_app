@@ -7,6 +7,7 @@ import 'package:aura_project/core/widgets/custom_text_field.dart';
 import 'package:aura_project/core/widgets/custom_soical_button.dart';
 import 'package:aura_project/fratuers/register/logic/register_cubit.dart';
 import 'package:aura_project/fratuers/register/logic/register_state.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -42,6 +43,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SnackBar(
                 content: Text(state.errorMessage),
                 backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
           }
@@ -82,13 +87,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                       ),
 
-                      SizedBox(height: context.usableHeight * 0.01),
+                      SizedBox(height: context.usableHeight * 0.04),
 
                       Text(
                         "Create Your Account",
                         style: TextStyle(
                           fontSize: context.getResponsiveFontSize(
-                            20,
+                            24,
                             minSize: 16,
                             maxSize: 25,
                           ),
@@ -98,17 +103,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       SizedBox(height: context.usableHeight * 0.01),
                       Text(
-                        "Start your journey with smart, continuous health monitoring.",
+                        "Start your journey with smart, \ncontinuous health monitoring.",
                         style: TextStyle(
                           fontSize: context.getResponsiveFontSize(
-                            14,
+                            16,
                             minSize: 12,
                             maxSize: 16,
                           ),
                           color: AppColors.textBodyColor,
                         ),
                       ),
-                      SizedBox(height: context.usableHeight * 0.015),
+                      SizedBox(height: context.usableHeight * 0.03),
 
                       Row(
                         children: [
@@ -129,6 +134,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hintText: "First Name",
                               backgroundColor: const Color(0xffEEEEEE),
                               validator: RegisterCubit.nameValidator,
+                              hasBorder: true,
                             ),
                           ),
                           SizedBox(width: context.screenWidth * 0.03),
@@ -138,6 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               hintText: "Last Name",
                               backgroundColor: const Color(0xffEEEEEE),
                               validator: RegisterCubit.nameValidator,
+                              hasBorder: true,
                             ),
                           ),
                         ],
@@ -154,13 +161,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      SizedBox(height: 5),
                       CustomTextField(
                         controller: cubit.emailController,
                         hintText: "Enter Your Email",
                         backgroundColor: const Color(0xffEEEEEE),
                         keyboardType: TextInputType.emailAddress,
                         validator: RegisterCubit.emailValidator,
+                        hasBorder: true,
                       ),
                       SizedBox(height: context.usableHeight * 0.02),
 
@@ -174,11 +182,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
+                      SizedBox(height: 5),
                       CustomTextField(
                         controller: cubit.passwordController,
                         hintText: "Enter your password",
 
                         obscureText: _isPasswordObscure,
+                        hasBorder: true,
                         backgroundColor: const Color(0xffEEEEEE),
                         validator: RegisterCubit.passwordValidator,
                         suffixIcon: IconButton(
@@ -205,11 +215,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
+                      SizedBox(height: 5),
                       CustomTextField(
                         controller: cubit.confirmPasswordController,
                         hintText: "Re-enter your password",
 
                         obscureText: _isConfirmPasswordObscure,
+                        hasBorder: true,
                         backgroundColor: const Color(0xffEEEEEE),
                         validator: (value) =>
                             RegisterCubit.confirmPasswordValidator(
@@ -234,36 +246,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       BuildInputLabel(
                         text: "Phone Number",
                         icon: Icons.phone_outlined,
+                        iconColor: AppColors.text100Color,
                       ),
-                      CustomTextField(
-                        controller: cubit.phoneController,
-                        hintText: "Enter your phone number",
-                        keyboardType: TextInputType.phone,
-                        validator: RegisterCubit.phoneValidator,
+                      SizedBox(height: 1),
+
+                      Row(
+                        children: [
+                          Container(
+                            height: 55,
+                            decoration: BoxDecoration(
+                              color: const Color(0xffEEEEEE),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xffE0E0E0),
+                              ),
+                            ),
+                            child: CountryCodePicker(
+                              onChanged: (country) {
+                                if (country.dialCode != null) {
+                                  cubit.selectedCountryCode = country.dialCode!;
+                                }
+                              },
+                              initialSelection: 'EG',
+                              closeIcon: Icon(Icons.keyboard_arrow_down),
+                              favorite: const ['+20', 'EG'],
+                              showCountryOnly: false,
+                              showOnlyCountryWhenClosed: false,
+                              alignLeft: false,
+                              padding: EdgeInsets.zero,
+                              textStyle: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ),
+                              flagWidth: 25,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: CustomTextField(
+                              controller: cubit.phoneController,
+                              hintText: "Enter Your Phone Number",
+                              keyboardType: TextInputType.phone,
+                              backgroundColor: const Color(0xffEEEEEE),
+                              hasBorder: true,
+                              validator: RegisterCubit.phoneValidator,
+                            ),
+                          ),
+                        ],
                       ),
 
                       SizedBox(height: context.usableHeight * 0.02),
 
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: Checkbox(
-                              value: _isAgreedToTerms,
-                              activeColor: AppColors.primaryColor,
-                              side: const BorderSide(color: Colors.grey),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _isAgreedToTerms = value!;
-                                });
-                              },
+                          Checkbox(
+                            value: _isAgreedToTerms,
+                            activeColor: AppColors.primaryColor,
+                            side: const BorderSide(color: Colors.grey),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
                             ),
+                            onChanged: (value) {
+                              setState(() {
+                                _isAgreedToTerms = value!;
+                              });
+                            },
                           ),
+
                           const SizedBox(width: 5),
                           Expanded(
                             child: RichText(
@@ -274,10 +324,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     minSize: 12,
                                     maxSize: 14,
                                   ),
-                                  color: AppColors.text80Color,
                                 ),
                                 children: [
-                                  const TextSpan(text: "I agree to the "),
+                                  const TextSpan(
+                                    text: "I agree to the ",
+                                    style: TextStyle(color: Color(0xff212121)),
+                                  ),
                                   TextSpan(
                                     text: "Terms & Conditions",
                                     style: const TextStyle(
@@ -289,7 +341,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         // TODO: فتح صفحة الشروط
                                       },
                                   ),
-                                  const TextSpan(text: " and "),
+                                  const TextSpan(
+                                    text: " and ",
+                                    style: TextStyle(color: Color(0xff212121)),
+                                  ),
                                   TextSpan(
                                     text: "Privacy Policy",
                                     style: const TextStyle(
@@ -308,7 +363,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: context.usableHeight * 0.01),
+                      SizedBox(height: context.usableHeight * 0.02),
 
                       (state is RegisterLoading)
                           ? const Center(child: CircularProgressIndicator())
@@ -317,11 +372,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               onPressed: () {
                                 if (!_isAgreedToTerms) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
+                                    SnackBar(
+                                      content: const Text(
                                         "Please agree to the Terms & Conditions",
                                       ),
                                       backgroundColor: Colors.red,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
                                     ),
                                   );
                                   return;
@@ -329,7 +388,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 cubit.register();
                               },
                             ),
-                      SizedBox(height: context.usableHeight * 0.01),
+                      SizedBox(height: context.usableHeight * 0.02),
 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -362,7 +421,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: context.usableHeight * 0.01),
+                      SizedBox(height: context.usableHeight * 0.02),
 
                       Row(
                         children: [

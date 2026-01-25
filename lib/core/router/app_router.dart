@@ -1,5 +1,6 @@
 import 'package:aura_project/core/router/routes.dart';
 import 'package:aura_project/fratuers/bluetooth/ui/bluetooth_screen.dart';
+import 'package:aura_project/fratuers/bluetooth/ui/permission_screen.dart';
 import 'package:aura_project/fratuers/compelete_profile/ui/complete_profile_screen.dart';
 import 'package:aura_project/fratuers/home/ui/home_screen.dart';
 import 'package:aura_project/fratuers/login/ui/forget_password_screen.dart';
@@ -58,6 +59,9 @@ class AppRouter {
         );
       case Routes.bluetoothConnect:
         return MaterialPageRoute(builder: (_) => const BluetoothScreen());
+
+      case Routes.bluetoothPermission:
+        return MaterialPageRoute(builder: (_) => const PermissionsScreen());
 
       case Routes.profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());

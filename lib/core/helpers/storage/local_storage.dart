@@ -7,6 +7,8 @@ class LocalStorage {
   static const String _onBoardingKey = 'hasSeenOnBoarding';
   static const String _deviceIdKey = 'linked_device_id';
   static const String _userIdKey = 'user_id';
+  static const String kCachedEmail = 'cached_email';
+  static const String kCachedPassword = 'cached_password';
 
   static Future<void> init() async {
     sharedPreferences = await SharedPreferences.getInstance();
@@ -50,5 +52,24 @@ class LocalStorage {
     await sharedPreferences.remove(_tokenKey);
     await sharedPreferences.remove(_userIdKey);
     print("🧹 Local Data Cleared");
+  }
+
+  static Future<void> saveUserCredentials(String email, String password) async {
+    await sharedPreferences.setString(kCachedEmail, email);
+    await sharedPreferences.setString(kCachedPassword, password);
+  }
+
+  static String? getCachedEmail() {
+    return sharedPreferences.getString(kCachedEmail);
+  }
+
+  static String? getCachedPassword() {
+    return sharedPreferences.getString(kCachedPassword);
+  }
+
+  static Future<void> clearUserCredentials() async {
+    await sharedPreferences.remove(kCachedEmail);
+
+    await sharedPreferences.remove(kCachedPassword);
   }
 }

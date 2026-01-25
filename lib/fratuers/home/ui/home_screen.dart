@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:aura_project/core/helpers/extension.dart';
 import 'package:aura_project/core/router/routes.dart';
+import 'package:aura_project/core/services/notification_service.dart';
 import 'package:aura_project/core/style/colors.dart';
 import 'package:aura_project/fratuers/bluetooth/logic/bluetooth_cubit.dart';
 import 'package:aura_project/fratuers/bluetooth/logic/bluetooth_state.dart';
@@ -46,6 +49,8 @@ class HomeScreen extends StatelessWidget {
           int spo2 = 0;
           double temp = 0.0;
           int steps = 0;
+          int sos = 0;
+          int shake = 0;
           bool isConnected = false;
 
           if (state is BluetoothDataReceived) {
@@ -53,6 +58,8 @@ class HomeScreen extends StatelessWidget {
             spo2 = state.data.oxygen;
             temp = state.data.temperature;
             steps = state.data.steps;
+            sos = state.data.sos;
+            shake = state.data.shake;
             isConnected = true;
           } else if (state is BluetoothConnected) {
             isConnected = true;
@@ -88,7 +95,7 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         isConnected
-                            ? "Connected to Aura Band"
+                            ? "Connected to Aura Watch"
                             : "Device Disconnected",
                         style: TextStyle(
                           color: isConnected ? Colors.green : Colors.red,
@@ -137,6 +144,22 @@ class HomeScreen extends StatelessWidget {
                       "steps",
                       Icons.directions_walk,
                       Colors.green,
+                    ),
+
+                    _buildHealthCard(
+                      "SOS Status",
+                      sos == 1 ? "ALERT!" : "Safe",
+                      "",
+                      Icons.sos,
+                      sos == 1 ? Colors.red : Colors.green,
+                    ),
+
+                    _buildHealthCard(
+                      "Fall Check",
+                      shake == 1 ? "FALL!" : "Stable",
+                      "",
+                      Icons.personal_injury,
+                      shake == 1 ? Colors.red : Colors.green,
                     ),
                   ],
                 ),
@@ -210,15 +233,15 @@ class HomeScreen extends StatelessWidget {
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 28,
+            style: TextStyle(
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: AppColors.text100Color,
             ),
           ),
           const SizedBox(height: 5),
           Text(
-            "$unit $title",
+            unit.isEmpty ? title : "$unit $title",
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[600],
@@ -233,30 +256,141 @@ class HomeScreen extends StatelessWidget {
   void _showEmergencyDialog(BuildContext context, String message) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      barrierDismissible: false,
+      builder: (_) => EmergencyCountdownDialog(
+        message: message,
+        emergencyNumber: "01064351868",
+      ),
+    );
+  }
+}
+
+class EmergencyCountdownDialog extends StatefulWidget {
+  final String message;
+  final String emergencyNumber;
+
+  const EmergencyCountdownDialog({
+    super.key,
+    required this.message,
+    this.emergencyNumber = "01064351868",
+  });
+
+  @override
+  State<EmergencyCountdownDialog> createState() =>
+      _EmergencyCountdownDialogState();
+}
+
+class _EmergencyCountdownDialogState extends State<EmergencyCountdownDialog> {
+  Timer? _timer;
+  int _timeLeft = 10;
+  StreamSubscription? _cancelSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+    _cancelSubscription = NotificationService().onCancelStream.listen((_) {
+      if (mounted) {
+        print('Diaolg recived cancel signal from notification!');
+        _timer?.cancel();
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      }
+    });
+  }
+
+  void _startCountdown() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      setState(() {
+        if (_timeLeft > 0) {
+          setState(() {
+            _timeLeft--;
+          });
+        } else {
+          _timer?.cancel();
+
+          if (Navigator.canPop(context)) Navigator.pop(context);
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _cancelSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      child: AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
         title: const Row(
           children: [
-            Icon(Icons.warning, color: Colors.red),
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 30),
             SizedBox(width: 10),
-            Text("EMERGENCY"),
+            Text(
+              "EMERGENCY",
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
-        content: Text(message, style: const TextStyle(fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 20),
+
+            Container(
+              width: 80,
+              height: 80,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.red, width: 2),
+              ),
+              child: Text(
+                "$_timeLeft",
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Auto-calling help in...",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("I'm OK", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(context);
-              //  كود الاتصال برقم الطوارئ
-            },
-            child: const Text(
-              "Call Help",
-              style: TextStyle(color: Colors.white),
+          Center(
+            child: TextButton(
+              onPressed: () {
+                NotificationService().stopEmergencySequence();
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "I'm OK",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],

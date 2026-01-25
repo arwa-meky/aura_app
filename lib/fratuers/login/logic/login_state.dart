@@ -13,9 +13,18 @@ class LoginFailure extends LoginState {
 
 class LoginGoogleLoading extends LoginState {}
 
+class LoginGoogleSuccess extends LoginState {}
+
 class LoginGoogleFailure extends LoginState {
   final String errorMessage;
   LoginGoogleFailure(this.errorMessage);
 }
 
-class LoginGoogleSuccess extends LoginState {}
+class LoginFacebookLoading extends LoginState {}
+
+class LoginFacebookSuccess extends LoginState {}
+
+class LoginFacebookFailure extends LoginState {
+  final String errMessage;
+  LoginFacebookFailure(this.errMessage);
+}

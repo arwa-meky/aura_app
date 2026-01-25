@@ -1,28 +1,41 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.aura_project">
-     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SEND_SMS"/> 
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" /> 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />  
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" /> 
+        <uses-permission android:name="android.permission.CALL_PHONE"/>
+
+
+
+   
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
+
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<queries> <intent> <action android:name="android.intent.action.VIEW" /> 
+<data android:scheme="sms" /> </intent> 
+<intent> <action android:name="android.intent.action.DIAL" /> 
+<data android:scheme="tel" /> </intent> </queries>
 
     <application
         android:label="aura_project"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        
-        android:usesCleartextTraffic="true"
-        >
-        
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -46,11 +59,36 @@
             android:foregroundServiceType="connectedDevice|dataSync" 
             android:permission="android.permission.FOREGROUND_SERVICE"
             android:exported="true" 
+            android:enabled="true"
         />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-    </application>
+
+        <meta-data 
+            android:name="com.facebook.sdk.ApplicationId" 
+            android:value="@string/facebook_app_id"/>
+        
+        <meta-data 
+            android:name="com.facebook.sdk.ClientToken" 
+            android:value="@string/facebook_client_token"/>
+
+        <activity 
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name" />
+
+            <receiver android:enabled="true" android:exported="true" android:name="id.flutter.flutter_background_service.BootBroadcastReceiver"> 
+            <intent-filter> <action android:name="android.intent.action.BOOT_COMPLETED" /> 
+            <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+             </intent-filter>
+              </receiver>
+              <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
+        
+   
+
+        </application>
+
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>

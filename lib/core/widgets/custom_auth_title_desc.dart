@@ -20,9 +20,9 @@ class CustomAuthTitleDesc extends StatelessWidget {
           title,
           style: TextStyle(
             fontSize: context.getResponsiveFontSize(
-              24,
-              minSize: 20,
-              maxSize: 28,
+              20,
+              minSize: 18,
+              maxSize: 24,
             ),
             fontWeight: FontWeight.bold,
           ),
@@ -32,8 +32,8 @@ class CustomAuthTitleDesc extends StatelessWidget {
           description,
           style: TextStyle(
             fontSize: context.getResponsiveFontSize(
-              15,
-              minSize: 13,
+              13,
+              minSize: 10,
               maxSize: 18,
             ),
             color: AppColors.textBodyColor,

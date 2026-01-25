@@ -17,13 +17,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _isRememberMeChecked = false;
   bool _isPasswordObscure = true;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LoginCubit(),
+      create: (context) => LoginCubit()..loadSavedCredentials(),
       child: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
@@ -41,6 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
               SnackBar(
                 content: Text(state.errorMessage),
                 backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
           } else if (state is LoginGoogleFailure) {
@@ -48,6 +51,23 @@ class _LoginScreenState extends State<LoginScreen> {
               SnackBar(
                 content: Text(state.errorMessage),
                 backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            );
+          } else if (state is LoginFacebookSuccess) {
+            context.pushNamedAndRemoveAll(Routes.home);
+          } else if (state is LoginFacebookFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errMessage),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             );
           }
@@ -56,40 +76,45 @@ class _LoginScreenState extends State<LoginScreen> {
           final cubit = context.read<LoginCubit>();
 
           return Scaffold(
-            backgroundColor: Color(0xffF5F8FF),
+            backgroundColor: const Color(0xffF5F8FF),
             body: SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.screenWidth * 0.04,
-                      vertical: context.usableHeight * 0.01,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(
-                            Icons.arrow_back_ios,
-                            size: 20,
-                            color: Colors.black,
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.screenWidth * 0.04,
+                        vertical: context.usableHeight * 0.01,
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                onPressed: () => Navigator.pop(context),
+                                icon: const Icon(
+                                  Icons.arrow_back_ios,
+                                  size: 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Image.asset(
+                                'assets/images/logo_name.png',
+                                width: context.screenWidth * 0.25,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 40),
+                            ],
                           ),
-                        ),
-                        Image.asset(
-                          'assets/images/logo_name.png',
-                          width: context.screenWidth * 0.25,
-                          fit: BoxFit.contain,
-                        ),
-
-                        const SizedBox(width: 40),
-                      ],
+                          SizedBox(height: context.usableHeight * 0.02),
+                        ],
+                      ),
                     ),
                   ),
 
-                  SizedBox(height: context.usableHeight * 0.02),
-
-                  Expanded(
+                  SliverFillRemaining(
+                    hasScrollBody: false,
                     child: Container(
                       width: double.infinity,
                       decoration: const BoxDecoration(
@@ -99,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           topRight: Radius.circular(40),
                         ),
                       ),
-                      child: SingleChildScrollView(
+                      child: Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: context.screenWidth * 0.06,
                           vertical: context.usableHeight * 0.04,
@@ -109,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 "Welcome Back",
                                 style: TextStyle(
                                   fontSize: 24,
@@ -117,20 +142,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: AppColors.text100Color,
                                 ),
                               ),
-                              SizedBox(height: 10),
-                              Text(
+                              const SizedBox(height: 10),
+                              const Text(
                                 "Monitor your health anytime, anywhere.",
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: AppColors.textBodyColor,
                                 ),
                               ),
-                              SizedBox(height: 30),
-                              Row(
+                              const SizedBox(height: 30),
+
+                              const Row(
                                 children: [
-                                  const Icon(Icons.email_outlined),
+                                  Icon(Icons.email_outlined),
                                   SizedBox(width: 2),
-                                  const Text(
+                                  Text(
                                     "Email Address",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
@@ -138,25 +164,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               CustomTextField(
                                 controller: cubit.emailController,
                                 hintText: "Enter Your Email",
-
                                 keyboardType: TextInputType.emailAddress,
                                 validator: LoginCubit.emailValidator,
-
                                 backgroundColor: const Color(0xffEEEEEE),
                                 hasBorder: true,
                               ),
 
-                              SizedBox(height: 20),
+                              const SizedBox(height: 10),
 
-                              Row(
+                              // Password Field
+                              const Row(
                                 children: [
-                                  const Icon(Icons.lock_outline),
+                                  Icon(Icons.lock_outline),
                                   SizedBox(width: 2),
-                                  const Text(
+                                  Text(
                                     "Password",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
@@ -164,24 +189,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ],
                               ),
-
                               SizedBox(height: context.usableHeight * 0.01),
                               CustomTextField(
                                 controller: cubit.passwordController,
                                 hintText: "Enter Your Password",
-
                                 obscureText: _isPasswordObscure,
                                 validator: LoginCubit.passwordValidator,
-
                                 backgroundColor: const Color(0xffEEEEEE),
                                 hasBorder: true,
-
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _isPasswordObscure
                                         ? Icons.visibility_outlined
                                         : Icons.visibility_off_outlined,
-                                    color: AppColors.textBodyColor,
+                                    color: const Color(0xffACACAC),
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -191,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
 
-                              SizedBox(height: 10),
+                              const SizedBox(height: 5),
 
                               Row(
                                 mainAxisAlignment:
@@ -200,15 +221,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Row(
                                     children: [
                                       Checkbox(
-                                        value: _isRememberMeChecked,
+                                        value: cubit.isRememberMe,
+                                        side: const BorderSide(
+                                          color: Colors.grey,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
                                         activeColor: AppColors.primaryColor,
                                         onChanged: (v) => setState(
-                                          () => _isRememberMeChecked = v!,
+                                          () =>
+                                              cubit.changeRememberMeStatus(v!),
                                         ),
                                       ),
                                       const Text(
                                         "Remember Me",
-                                        style: TextStyle(fontSize: 12),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -221,14 +254,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                       style: TextStyle(
                                         color: AppColors.primaryColor,
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 11,
+                                        fontSize: 12,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
 
-                              SizedBox(height: 20),
+                              const SizedBox(height: 5),
 
                               (state is LoginLoading)
                                   ? const Center(
@@ -239,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       onPressed: cubit.loginWithEmail,
                                     ),
 
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
 
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -259,20 +292,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
 
-                              SizedBox(height: 20),
+                              const SizedBox(height: 10),
+
                               const Row(
                                 children: [
-                                  Expanded(child: Divider()),
+                                  Expanded(
+                                    child: Divider(color: Color(0xffC1C5C9)),
+                                  ),
                                   Padding(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                     ),
-                                    child: Text("Or"),
+                                    child: Text(
+                                      "Or",
+                                      style: TextStyle(
+                                        color: Color(0xffC1C5C9),
+                                      ),
+                                    ),
                                   ),
-                                  Expanded(child: Divider()),
+                                  Expanded(
+                                    child: Divider(color: Color(0xffC1C5C9)),
+                                  ),
                                 ],
                               ),
-                              SizedBox(height: 20),
+
+                              const SizedBox(height: 10),
 
                               (state is LoginGoogleLoading)
                                   ? const Center(
@@ -283,19 +327,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                       iconPath: 'assets/images/google.png',
                                       onPressed: cubit.loginWithGoogle,
                                     ),
-                              SizedBox(height: 15),
-                              BuildSocialButton(
-                                text: "Continue with Facebook",
-                                iconPath: 'assets/images/facebook.png',
-                                onPressed: () {},
-                              ),
-                              SizedBox(height: 15),
+                              const SizedBox(height: 15),
+                              (state is LoginFacebookLoading)
+                                  ? const Center(
+                                      child: CircularProgressIndicator(),
+                                    )
+                                  : BuildSocialButton(
+                                      text: "Continue with Facebook",
+                                      iconPath: 'assets/images/facebook.png',
+                                      onPressed: cubit.loginWithFacebook,
+                                    ),
+                              const SizedBox(height: 15),
                               BuildSocialButton(
                                 text: "Continue with Apple",
                                 iconPath: 'assets/images/apple.png',
                                 onPressed: () {},
                               ),
-                              SizedBox(height: 40),
+
+                              const SizedBox(height: 40),
                             ],
                           ),
                         ),

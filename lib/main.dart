@@ -13,6 +13,7 @@ import 'package:hive_flutter/adapters.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().init();
   await LocalStorage.init();
   await Hive.initFlutter();
   Hive.registerAdapter(HealthReadingModelAdapter());

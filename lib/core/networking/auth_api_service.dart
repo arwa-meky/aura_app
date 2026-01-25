@@ -107,9 +107,16 @@ class AuthApiService {
   }
 
   Future<Response> loginWithGoogle({required String googleIdToken}) async {
-    return await DioFactory.postData(
+    return await DioFactory.getData(
       path: ApiConstants.loginWithGoogle,
-      data: {'idToken': googleIdToken},
+      token: googleIdToken,
+    );
+  }
+
+  Future<Response> loginWithFacebook({required String accessToken}) async {
+    return await DioFactory.getData(
+      path: ApiConstants.loginWithFacebook,
+      token: accessToken,
     );
   }
 
@@ -120,6 +127,20 @@ class AuthApiService {
     return await DioFactory.postData(
       path: ApiConstants.linkDevice,
       data: {'deviceId': deviceId, 'deviceName': deviceName},
+      token: LocalStorage.token,
+    );
+  }
+
+  Future<Response> getPairedDevices() async {
+    return await DioFactory.getData(
+      path: ApiConstants.pairedDevices,
+      token: LocalStorage.token,
+    );
+  }
+
+  Future<Response> unlinkDevice({required String deviceId}) async {
+    return await DioFactory.deleteData(
+      path: '${ApiConstants.disconnectDevice}/$deviceId',
       token: LocalStorage.token,
     );
   }

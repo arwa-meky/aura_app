@@ -29,6 +29,14 @@
     <key>UIMainStoryboardFile</key>
     <string>Main</string>
     <key>UISupportedInterfaceOrientations</key>
+    <key>NSLocationWhenInUseUsageDescription</key>
+<string>We need location access for SOS and activity tracking.</string>
+<key>NSMotionUsageDescription</key>
+<string>We need motion access to detect falls.</string>
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>We need Bluetooth to connect to Aura Watch.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>We need microphone access for stress monitoring.</string>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
         <string>UIInterfaceOrientationLandscapeLeft</string>

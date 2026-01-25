@@ -3,6 +3,7 @@ import 'package:aura_project/core/networking/auth_api_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'login_state.dart';
 
@@ -13,6 +14,23 @@ class LoginCubit extends Cubit<LoginState> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+  bool isRememberMe = false;
+
+  void changeRememberMeStatus(bool value) {
+    isRememberMe = value;
+    emit(LoginInitial());
+  }
+
+  void loadSavedCredentials() {
+    final savedEmail = LocalStorage.getCachedEmail();
+    final savedPassword = LocalStorage.getCachedPassword();
+    if (savedEmail != null && savedPassword != null) {
+      emailController.text = savedEmail;
+      passwordController.text = savedPassword;
+      isRememberMe = true;
+      emit(LoginInitial());
+    }
+  }
 
   void loginWithEmail() async {
     if (formKey.currentState == null || !formKey.currentState!.validate()) {
@@ -25,6 +43,14 @@ class LoginCubit extends Cubit<LoginState> {
         email: emailController.text,
         password: passwordController.text,
       );
+      if (isRememberMe) {
+        await LocalStorage.saveUserCredentials(
+          emailController.text,
+          passwordController.text,
+        );
+      } else {
+        await LocalStorage.clearUserCredentials();
+      }
       emit(LoginSuccess());
     } on DioException catch (e) {
       emit(LoginFailure(handleDioError(e, "Login failed")));
@@ -35,38 +61,62 @@ class LoginCubit extends Cubit<LoginState> {
 
   void loginWithGoogle() async {
     emit(LoginGoogleLoading());
+
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        serverClientId:
-            "1054613969192-94sm2a01bbpnl41cvnh4i6kjkbecadvm.apps.googleusercontent.com",
-        scopes: ['email'],
+      final googleSignIn = GoogleSignIn(
+        serverClientId: "",
+        scopes: ['email', "profile"],
       );
 
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
+      final user = await googleSignIn.signIn();
+      if (user == null) {
         emit(LoginInitial());
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-
-      if (idToken == null) throw Exception("Google ID Token was null");
+      final auth = await user.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) throw Exception("No idToken");
 
       final response = await _apiService.loginWithGoogle(
         googleIdToken: idToken,
       );
-
-      final String token = response.data['token'];
-
-      await LocalStorage.saveToken(token);
-      emit(LoginGoogleSuccess());
-    } on DioException catch (e) {
-      emit(LoginGoogleFailure(handleDioError(e, "Google login failed")));
+      if (response.data != null && response.data['token'] != null) {
+        await LocalStorage.saveToken(response.data['token']);
+        emit(LoginGoogleSuccess());
+      } else {
+        emit(LoginGoogleFailure("Invaild response from server"));
+      }
     } catch (e) {
-      emit(LoginGoogleFailure(e.toString()));
+      if (e is DioException) {
+        emit(LoginGoogleFailure(e.toString()));
+      }
+    }
+  }
+
+  void loginWithFacebook() async {
+    emit(LoginFacebookLoading());
+
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+
+      if (result.status == LoginStatus.success) {
+        final AccessToken accessToken = result.accessToken!;
+
+        final response = await _apiService.loginWithFacebook(
+          accessToken: accessToken.tokenString,
+        );
+
+        await LocalStorage.saveToken(response.data['token']);
+
+        emit(LoginFacebookSuccess());
+      } else {
+        emit(
+          LoginFacebookFailure(result.message ?? "Facebook login cancelled"),
+        );
+      }
+    } catch (e) {
+      emit(LoginFacebookFailure(e.toString()));
     }
   }
 

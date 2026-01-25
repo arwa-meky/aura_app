@@ -51,6 +51,12 @@ dependencies:
   jwt_decoder: ^2.0.1
   flutter_local_notifications: ^17.0.0
   flutter_background_service: ^5.0.5
+  flutter_facebook_auth: ^7.0.0 
+  country_code_picker: ^3.0.0
+
+
+
+
 
 dev_dependencies:
   flutter_test:
