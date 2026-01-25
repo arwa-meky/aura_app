@@ -14,6 +14,7 @@ class SocketService {
       return;
     }
     _initialized = true;
+
     socket = IO.io(
       ApiConstants.baseUrl,
       IO.OptionBuilder()
@@ -52,7 +53,6 @@ class SocketService {
 
   static void sendHealthData(Map<String, dynamic> data) {
     if (isConnected) {
-      // (اتأكد من الاسم مع الباك إند)
       // - Emit the data read from the smartwatch to the backend server
       socket.emit('chat message', data);
       print("📡 Data emitted via Socket");
