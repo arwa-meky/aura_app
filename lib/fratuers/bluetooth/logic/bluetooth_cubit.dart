@@ -46,7 +46,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
     final int hr = 70 + random.nextInt(30);
     final int o2 = 95 + random.nextInt(5);
-    final double temp = 36.5 + (random.nextInt(10) / 10);
+    final int speed = random.nextInt(10) * 10;
 
     final bool isSOS = random.nextInt(100) > 89;
     final bool isFallDetected = random.nextInt(100) > 89;
@@ -56,7 +56,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       timestamp: DateTime.now().toIso8601String(),
       heartRate: hr,
       oxygen: o2,
-      temperature: temp,
+      speed: speed,
       steps: 1500 + random.nextInt(100),
       lat: 30.0,
       lon: 31.0,

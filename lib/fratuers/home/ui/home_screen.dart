@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           int hr = 0;
           int spo2 = 0;
-          double temp = 0.0;
+          int speed = 0;
           int steps = 0;
           int sos = 0;
           int shake = 0;
@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
           if (state is BluetoothDataReceived) {
             hr = state.data.heartRate;
             spo2 = state.data.oxygen;
-            temp = state.data.temperature;
+            speed = state.data.speed;
             steps = state.data.steps;
             sos = state.data.sos;
             shake = state.data.shake;
@@ -132,10 +132,10 @@ class HomeScreen extends StatelessWidget {
                       Colors.blue,
                     ),
                     _buildHealthCard(
-                      "Temperature",
-                      temp.toStringAsFixed(1),
-                      "°C",
-                      Icons.thermostat,
+                      "Speed",
+                      speed.toStringAsFixed(1),
+                      "Km/h",
+                      Icons.speed,
                       Colors.orange,
                     ),
                     _buildHealthCard(
@@ -257,23 +257,15 @@ class HomeScreen extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => EmergencyCountdownDialog(
-        message: message,
-        emergencyNumber: "01064351868",
-      ),
+      builder: (_) => EmergencyCountdownDialog(message: message),
     );
   }
 }
 
 class EmergencyCountdownDialog extends StatefulWidget {
   final String message;
-  final String emergencyNumber;
 
-  const EmergencyCountdownDialog({
-    super.key,
-    required this.message,
-    this.emergencyNumber = "01064351868",
-  });
+  const EmergencyCountdownDialog({super.key, required this.message});
 
   @override
   State<EmergencyCountdownDialog> createState() =>

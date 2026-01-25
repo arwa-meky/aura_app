@@ -21,7 +21,7 @@ class HealthReadingModelAdapter extends TypeAdapter<HealthReadingModel> {
       timestamp: fields[1] as String,
       heartRate: fields[2] as int,
       oxygen: fields[3] as int,
-      temperature: fields[4] as double,
+      speed: fields[4] as int,
       steps: fields[5] as int,
       lat: fields[6] as double,
       lon: fields[7] as double,
@@ -45,7 +45,7 @@ class HealthReadingModelAdapter extends TypeAdapter<HealthReadingModel> {
       ..writeByte(3)
       ..write(obj.oxygen)
       ..writeByte(4)
-      ..write(obj.temperature)
+      ..write(obj.speed)
       ..writeByte(5)
       ..write(obj.steps)
       ..writeByte(6)

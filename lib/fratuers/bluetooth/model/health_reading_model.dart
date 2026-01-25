@@ -17,7 +17,7 @@ class HealthReadingModel extends HiveObject {
   final int oxygen;
 
   @HiveField(4)
-  final double temperature;
+  final int speed;
 
   @HiveField(5)
   final int steps;
@@ -48,7 +48,7 @@ class HealthReadingModel extends HiveObject {
     required this.timestamp,
     required this.heartRate,
     required this.oxygen,
-    required this.temperature,
+    required this.speed,
     required this.steps,
     required this.lat,
     required this.lon,
@@ -104,7 +104,7 @@ class HealthReadingModel extends HiveObject {
 
       heartRate: toInt(json['HR']),
       oxygen: toInt(json['O2']),
-      temperature: toDouble(json['T']),
+      speed: toInt(json['SP']),
       steps: toInt(json['ST']),
 
       lat: toDouble(json['GPS']?['lat']),
@@ -126,7 +126,7 @@ class HealthReadingModel extends HiveObject {
       "data": {
         "heartRate": heartRate,
         "spO2": oxygen,
-        "temp": temperature,
+        "speed": speed,
         "steps": steps,
         "gps": {"lat": lat, "lon": lon},
         "Sitting or Standing": position,
