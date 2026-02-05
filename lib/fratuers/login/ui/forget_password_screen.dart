@@ -148,7 +148,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                         keyboardType: TextInputType.emailAddress,
                         validator: ForgotPasswordCubit.emailValidator,
                         hasBorder: true,
-                        backgroundColor: const Color(0xffEEEEEE),
+                        backgroundColor: const Color(0xffFFFFFF),
                       ),
 
                       SizedBox(height: context.usableHeight * 0.04),

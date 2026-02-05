@@ -13,6 +13,8 @@ class PermissionCubit extends Cubit<PermissionState> {
     final notificationStatus = await Permission.notification.isGranted;
     final bluetoothStatus = await Permission.bluetoothConnect.isGranted;
     final micStatus = await Permission.microphone.isGranted;
+    final phoneStatus = await Permission.phone.isGranted;
+    final smsStatus = await Permission.sms.isGranted;
 
     emit(
       state.copyWith(
@@ -21,6 +23,8 @@ class PermissionCubit extends Cubit<PermissionState> {
         isNotificationGranted: notificationStatus,
         isBluetoothGranted: bluetoothStatus,
         isMicGranted: micStatus,
+        isPhoneGranted: phoneStatus,
+        isSmsGranted: smsStatus,
       ),
     );
   }
@@ -39,6 +43,10 @@ class PermissionCubit extends Cubit<PermissionState> {
       emit(state.copyWith(isBluetoothGranted: status.isGranted));
     } else if (permission == Permission.microphone) {
       emit(state.copyWith(isMicGranted: status.isGranted));
+    } else if (permission == Permission.phone) {
+      emit(state.copyWith(isPhoneGranted: status.isGranted));
+    } else if (permission == Permission.sms) {
+      emit(state.copyWith(isSmsGranted: status.isGranted));
     }
   }
 
@@ -50,6 +58,8 @@ class PermissionCubit extends Cubit<PermissionState> {
       Permission.bluetoothConnect,
       Permission.bluetoothScan,
       Permission.microphone,
+      Permission.phone,
+      Permission.sms,
     ].request();
 
     _checkInitialStatus();

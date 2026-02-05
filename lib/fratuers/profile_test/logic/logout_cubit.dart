@@ -1,6 +1,6 @@
 import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:aura_project/core/networking/auth_api_service.dart';
-import 'package:aura_project/fratuers/profile/logic/logout_state.dart';
+import 'package:aura_project/fratuers/profile_test/logic/logout_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LogoutCubit extends Cubit<LogoutState> {

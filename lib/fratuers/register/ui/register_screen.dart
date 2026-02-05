@@ -117,12 +117,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       Row(
                         children: [
-                          const Icon(Icons.person_outline),
-                          SizedBox(width: 2),
                           const Text(
-                            "Full Name",
+                            "First Name",
                             style: TextStyle(fontWeight: FontWeight.w600),
                           ),
+                          Spacer(flex: 1),
+                          const Text(
+                            "Last Name",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          Spacer(flex: 1),
                         ],
                       ),
                       SizedBox(height: 5),
@@ -131,8 +135,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Expanded(
                             child: CustomTextField(
                               controller: cubit.firstNameController,
-                              hintText: "First Name",
-                              backgroundColor: const Color(0xffEEEEEE),
+                              hintText: "Enter Your First Name",
+                              backgroundColor: const Color(0xffFFFFFF),
                               validator: RegisterCubit.nameValidator,
                               hasBorder: true,
                             ),
@@ -141,8 +145,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Expanded(
                             child: CustomTextField(
                               controller: cubit.lastNameController,
-                              hintText: "Last Name",
-                              backgroundColor: const Color(0xffEEEEEE),
+                              hintText: "Enter Your Last Name",
+                              backgroundColor: const Color(0xffFFFFFF),
                               validator: RegisterCubit.nameValidator,
                               hasBorder: true,
                             ),
@@ -165,84 +169,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       CustomTextField(
                         controller: cubit.emailController,
                         hintText: "Enter Your Email",
-                        backgroundColor: const Color(0xffEEEEEE),
+                        backgroundColor: const Color(0xffFFFFFF),
                         keyboardType: TextInputType.emailAddress,
                         validator: RegisterCubit.emailValidator,
                         hasBorder: true,
                       ),
                       SizedBox(height: context.usableHeight * 0.02),
-
-                      Row(
-                        children: [
-                          const Icon(Icons.lock_outline),
-                          SizedBox(width: 2),
-                          const Text(
-                            "Password",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      CustomTextField(
-                        controller: cubit.passwordController,
-                        hintText: "Enter your password",
-
-                        obscureText: _isPasswordObscure,
-                        hasBorder: true,
-                        backgroundColor: const Color(0xffEEEEEE),
-                        validator: RegisterCubit.passwordValidator,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordObscure
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () => setState(
-                            () => _isPasswordObscure = !_isPasswordObscure,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: context.usableHeight * 0.02),
-
-                      Row(
-                        children: [
-                          const Icon(Icons.lock_outline),
-                          SizedBox(width: 2),
-                          const Text(
-                            " Confirm Password",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      CustomTextField(
-                        controller: cubit.confirmPasswordController,
-                        hintText: "Re-enter your password",
-
-                        obscureText: _isConfirmPasswordObscure,
-                        hasBorder: true,
-                        backgroundColor: const Color(0xffEEEEEE),
-                        validator: (value) =>
-                            RegisterCubit.confirmPasswordValidator(
-                              value,
-                              cubit.passwordController.text,
-                            ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isConfirmPasswordObscure
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () => setState(
-                            () => _isConfirmPasswordObscure =
-                                !_isConfirmPasswordObscure,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: context.usableHeight * 0.02),
-
                       BuildInputLabel(
                         text: "Phone Number",
                         icon: Icons.phone_outlined,
@@ -255,7 +187,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Container(
                             height: 55,
                             decoration: BoxDecoration(
-                              color: const Color(0xffEEEEEE),
+                              color: const Color(0xffFFFFFF),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: const Color(0xffE0E0E0),
@@ -288,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               controller: cubit.phoneController,
                               hintText: "Enter Your Phone Number",
                               keyboardType: TextInputType.phone,
-                              backgroundColor: const Color(0xffEEEEEE),
+                              backgroundColor: const Color(0xffFFFFFF),
                               hasBorder: true,
                               validator: RegisterCubit.phoneValidator,
                             ),
@@ -296,6 +228,76 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ],
                       ),
 
+                      SizedBox(height: context.usableHeight * 0.02),
+                      Row(
+                        children: [
+                          const Icon(Icons.lock_outline),
+                          SizedBox(width: 2),
+                          const Text(
+                            "Password",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 5),
+                      CustomTextField(
+                        controller: cubit.passwordController,
+                        hintText: "Enter your password",
+
+                        obscureText: _isPasswordObscure,
+                        hasBorder: true,
+                        backgroundColor: const Color(0xffFFFFFF),
+                        validator: RegisterCubit.passwordValidator,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordObscure
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: Color(0xff616161),
+                          ),
+                          onPressed: () => setState(
+                            () => _isPasswordObscure = !_isPasswordObscure,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: context.usableHeight * 0.02),
+
+                      Row(
+                        children: [
+                          const Icon(Icons.lock_outline),
+                          SizedBox(width: 2),
+                          const Text(
+                            " Confirm Password",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 5),
+                      CustomTextField(
+                        controller: cubit.confirmPasswordController,
+                        hintText: "Re-enter your password",
+
+                        obscureText: _isConfirmPasswordObscure,
+                        hasBorder: true,
+                        backgroundColor: const Color(0xffFFFFFF),
+                        validator: (value) =>
+                            RegisterCubit.confirmPasswordValidator(
+                              value,
+                              cubit.passwordController.text,
+                            ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isConfirmPasswordObscure
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: Color(0xff616161),
+                          ),
+                          onPressed: () => setState(
+                            () => _isConfirmPasswordObscure =
+                                !_isConfirmPasswordObscure,
+                          ),
+                        ),
+                      ),
                       SizedBox(height: context.usableHeight * 0.02),
 
                       Row(
@@ -333,7 +335,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   TextSpan(
                                     text: "Terms & Conditions",
                                     style: const TextStyle(
-                                      color: AppColors.primaryColor,
+                                      color: Color(0Xff194B96),
                                       fontWeight: FontWeight.w600,
                                     ),
                                     recognizer: TapGestureRecognizer()
@@ -348,7 +350,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   TextSpan(
                                     text: "Privacy Policy",
                                     style: const TextStyle(
-                                      color: AppColors.primaryColor,
+                                      color: Color(0Xff194B96),
                                       fontWeight: FontWeight.w600,
                                     ),
                                     recognizer: TapGestureRecognizer()
@@ -396,7 +398,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Text(
                             "Already have an account? ",
                             style: TextStyle(
-                              color: AppColors.textBodyColor,
+                              color: Color(0xff212121),
                               fontSize: context.getResponsiveFontSize(
                                 14,
                                 minSize: 12,
@@ -409,7 +411,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: Text(
                               "Login",
                               style: TextStyle(
-                                color: AppColors.primaryColor,
+                                color: Color(0Xff194B96),
                                 fontWeight: FontWeight.bold,
                                 fontSize: context.getResponsiveFontSize(
                                   14,
@@ -444,19 +446,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       BuildSocialButton(
                         text: "Continue with Google",
-                        iconPath: 'assets/images/google.png',
+                        iconPath: 'assets/images/login/google.png',
                         onPressed: () {},
                       ),
                       SizedBox(height: context.usableHeight * 0.01),
                       BuildSocialButton(
                         text: "Continue with Facebook",
-                        iconPath: 'assets/images/facebook.png',
+                        iconPath: 'assets/images/login/facebook.png',
                         onPressed: () {},
                       ),
                       SizedBox(height: context.usableHeight * 0.01),
                       BuildSocialButton(
                         text: "Continue with Apple",
-                        iconPath: 'assets/images/apple.png',
+                        iconPath: 'assets/images/login/apple.png',
                         onPressed: () {},
                       ),
 

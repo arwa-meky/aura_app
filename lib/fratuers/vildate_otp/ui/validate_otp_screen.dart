@@ -24,7 +24,7 @@ class ValidateOtpScreen extends StatelessWidget {
         body: BlocConsumer<ValidateOtpCubit, ValidateOtpState>(
           listener: (context, state) {
             if (state is ValidateOtpSuccess) {
-              context.pushNamedAndRemoveAll(Routes.home);
+              context.pushNamedAndRemoveAll(Routes.appBar);
             } else if (state is ValidateOtpNavigateToCompleteProfile) {
               context.pushNamedAndRemoveAll(Routes.completeProfile);
             } else if (state is ValidateOtpFailure) {
@@ -83,7 +83,7 @@ class ValidateOtpScreen extends StatelessWidget {
                     hintText: "Enter 6-digit Code",
                     keyboardType: TextInputType.number,
                     hasBorder: true,
-                    backgroundColor: const Color(0xffEEEEEE),
+                    backgroundColor: const Color(0xffFFFFFF),
                   ),
 
                   SizedBox(height: context.usableHeight * 0.05),

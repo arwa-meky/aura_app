@@ -51,10 +51,11 @@ class AuthApiService {
     required String gender,
     required int age,
     required int weight,
+    required int hight,
   }) async {
     return await DioFactory.postData(
       path: ApiConstants.completeProfile,
-      data: {'gender': gender, 'age': age, 'weight': weight},
+      data: {'gender': gender, 'age': age, 'weight': weight, 'height': hight},
       token: LocalStorage.token,
     );
   }
@@ -75,13 +76,12 @@ class AuthApiService {
   }
 
   Future<Response> resetPassword({
-    required String token,
     required String email,
     required String newPassword,
     required String confirmPassword,
   }) async {
     return await DioFactory.patchData(
-      path: "${ApiConstants.resetPassword}/$token",
+      path: ApiConstants.resetPassword,
       data: {
         'email': email,
         'password': newPassword,
@@ -107,17 +107,29 @@ class AuthApiService {
   }
 
   Future<Response> loginWithGoogle({required String googleIdToken}) async {
-    return await DioFactory.getData(
+    return await DioFactory.postData(
       path: ApiConstants.loginWithGoogle,
-      token: googleIdToken,
+      data: {'idToken': googleIdToken},
     );
   }
 
   Future<Response> loginWithFacebook({required String accessToken}) async {
-    return await DioFactory.getData(
+    return await DioFactory.postData(
       path: ApiConstants.loginWithFacebook,
-      token: accessToken,
+      data: {'accessToken': accessToken},
     );
+  }
+
+  Future<dynamic> verifyResetCode({
+    required String email,
+    required String code,
+  }) async {
+    final response = await DioFactory.postData(
+      path: ApiConstants.validateOtp,
+      data: {'email': email, 'otp': code},
+    );
+
+    return response.data;
   }
 
   Future<Response> linkDevice({
@@ -141,6 +153,21 @@ class AuthApiService {
   Future<Response> unlinkDevice({required String deviceId}) async {
     return await DioFactory.deleteData(
       path: '${ApiConstants.disconnectDevice}/$deviceId',
+      token: LocalStorage.token,
+    );
+  }
+
+  Future<Response> getPatientProfile() async {
+    return await DioFactory.getData(
+      path: ApiConstants.profileData,
+      token: LocalStorage.token,
+    );
+  }
+
+  Future<Response> updatePatientProfile({required FormData formData}) async {
+    return await DioFactory.postData(
+      path: ApiConstants.updateCompleteProfile,
+      data: formData,
       token: LocalStorage.token,
     );
   }

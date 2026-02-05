@@ -36,3 +36,10 @@ class BluetoothError extends BluetoothState {
   final String message;
   BluetoothError(this.message);
 }
+
+class BluetoothStreakUpdated extends BluetoothState {
+  final int currentStreak;
+  BluetoothStreakUpdated(this.currentStreak);
+}
+
+class BluetoothLocationUpdated extends BluetoothState {}

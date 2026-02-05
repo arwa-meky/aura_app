@@ -25,6 +25,14 @@ class _LoginScreenState extends State<LoginScreen> {
       create: (context) => LoginCubit()..loadSavedCredentials(),
       child: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {
+          void navigateUser(bool isComplete) {
+            if (isComplete) {
+              context.pushNamedAndRemoveAll(Routes.home);
+            } else {
+              context.pushNamedAndRemoveAll(Routes.completeProfile);
+            }
+          }
+
           if (state is LoginSuccess) {
             context.pushNamed(
               Routes.validateOtp,
@@ -34,35 +42,20 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             );
           } else if (state is LoginGoogleSuccess) {
-            context.pushNamedAndRemoveAll(Routes.home);
-          } else if (state is LoginFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            );
-          } else if (state is LoginGoogleFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            );
+            navigateUser(state.isProfileComplete);
           } else if (state is LoginFacebookSuccess) {
-            context.pushNamedAndRemoveAll(Routes.home);
-          } else if (state is LoginFacebookFailure) {
+            navigateUser(state.isProfileComplete);
+          } else if (state is LoginFailure ||
+              state is LoginGoogleFailure ||
+              state is LoginFacebookFailure) {
+            String errorMsg = "";
+            if (state is LoginFailure) errorMsg = state.errorMessage;
+            if (state is LoginGoogleFailure) errorMsg = state.errorMessage;
+            if (state is LoginFacebookFailure) errorMsg = state.errorMessage;
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errMessage),
+                content: Text(errorMsg),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -170,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintText: "Enter Your Email",
                                 keyboardType: TextInputType.emailAddress,
                                 validator: LoginCubit.emailValidator,
-                                backgroundColor: const Color(0xffEEEEEE),
+                                backgroundColor: const Color(0xffFFFFFF),
                                 hasBorder: true,
                               ),
 
@@ -195,14 +188,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintText: "Enter Your Password",
                                 obscureText: _isPasswordObscure,
                                 validator: LoginCubit.passwordValidator,
-                                backgroundColor: const Color(0xffEEEEEE),
+                                backgroundColor: const Color(0xffFFFFFF),
                                 hasBorder: true,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _isPasswordObscure
                                         ? Icons.visibility_outlined
                                         : Icons.visibility_off_outlined,
-                                    color: const Color(0xffACACAC),
+                                    color: const Color(0xff616161),
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -239,8 +232,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       const Text(
                                         "Remember Me",
                                         style: TextStyle(
-                                          fontSize: 10,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.w500,
+                                          color: Color(0xff212121),
                                         ),
                                       ),
                                     ],
@@ -254,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       style: TextStyle(
                                         color: AppColors.primaryColor,
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 12,
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ),
@@ -284,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     child: const Text(
                                       "Create Account",
                                       style: TextStyle(
-                                        color: AppColors.primaryColor,
+                                        color: Color(0xff194B96),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -324,7 +318,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     )
                                   : BuildSocialButton(
                                       text: "Continue with Google",
-                                      iconPath: 'assets/images/google.png',
+                                      iconPath:
+                                          'assets/images/login/google.png',
                                       onPressed: cubit.loginWithGoogle,
                                     ),
                               const SizedBox(height: 15),
@@ -334,13 +329,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     )
                                   : BuildSocialButton(
                                       text: "Continue with Facebook",
-                                      iconPath: 'assets/images/facebook.png',
+                                      iconPath:
+                                          'assets/images/login/facebook.png',
                                       onPressed: cubit.loginWithFacebook,
                                     ),
                               const SizedBox(height: 15),
                               BuildSocialButton(
                                 text: "Continue with Apple",
-                                iconPath: 'assets/images/apple.png',
+                                iconPath: 'assets/images/login/apple.png',
                                 onPressed: () {},
                               ),
 

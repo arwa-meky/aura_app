@@ -26,6 +26,7 @@ class ValidateOtpCubit extends Cubit<ValidateOtpState> {
         email: email,
         otp: otpController.text,
       );
+      final completeProfile = response.data["completedStatus"];
 
       if (response.data["status"] == 'success') {
         String token = response.data['data']['token'];
@@ -50,7 +51,7 @@ class ValidateOtpCubit extends Cubit<ValidateOtpState> {
         }
       }
 
-      if (isSignup) {
+      if (isSignup || !completeProfile) {
         emit(ValidateOtpNavigateToCompleteProfile());
       } else {
         emit(ValidateOtpSuccess());

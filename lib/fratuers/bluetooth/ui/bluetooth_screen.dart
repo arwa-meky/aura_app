@@ -37,9 +37,13 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 SnackBar(
                   content: Text("Connected to ${state.deviceName}"),
                   backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               );
-              context.pushNamedAndRemoveAll(Routes.home);
+              context.pushNamedAndRemoveAll(Routes.appBar);
             } else if (state is BluetoothError) {
               if (FlutterBluePlus.adapterStateNow == BluetoothAdapterState.on) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -147,18 +151,15 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0),
-                    child: TextButton(
-                      onPressed: () {
-                        cubit.startSimulation(); // for demo
-                      },
-                      child: const Text(
-                        "No Watch? Try Demo Mode",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          decoration: TextDecoration.underline,
-                        ),
+                  child: TextButton(
+                    onPressed: () {
+                      cubit.startSimulation(); // for demo
+                    },
+                    child: const Text(
+                      "No Watch? Try Demo Mode",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        decoration: TextDecoration.underline,
                       ),
                     ),
                   ),
@@ -239,7 +240,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
   Widget _buildTipItem(IconData icon, String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 20.0),
       child: Row(
         children: [
           Container(
@@ -355,7 +356,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           const SliverToBoxAdapter(
             child: Center(
               child: Padding(
-                padding: EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(60.0),
                 child: Text(
                   "No devices found",
                   style: TextStyle(color: Colors.grey, fontSize: 18),

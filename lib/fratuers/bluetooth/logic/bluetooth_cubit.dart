@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'package:aura_project/core/constants.dart';
 import 'package:aura_project/core/helpers/storage/hive_storage_service.dart';
 import 'package:aura_project/core/helpers/storage/local_storage.dart';
+import 'package:aura_project/core/networking/api_constants.dart';
 import 'package:aura_project/core/networking/auth_api_service.dart';
+import 'package:aura_project/core/networking/dio_factory.dart';
 import 'package:aura_project/core/networking/socket_service.dart';
 import 'package:aura_project/fratuers/bluetooth/logic/bluetooth_state.dart';
 import 'package:aura_project/fratuers/bluetooth/model/health_reading_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart' hide BluetoothState;
+import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:aura_project/core/services/notification_service.dart';
 import 'dart:math'; //for demo
@@ -17,6 +20,8 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   BluetoothCubit() : super(BluetoothInitial());
 
   final AuthApiService _apiService = AuthApiService();
+  int currentStreak = 0;
+  String currentAddress = "Finding location...";
 
   StreamSubscription? _scanSubscription;
   StreamSubscription? _dataSubscription;
@@ -311,6 +316,8 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
         emit(BluetoothEmergencyState("⚠️ Fall Detected! Check the patient!"));
       } else {
+        LocalStorage.saveLastSyncTime();
+
         emit(BluetoothDataReceived(data));
       }
     } catch (e) {
@@ -366,6 +373,41 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       Permission.location,
     ].request();
     return statuses.values.every((status) => status.isGranted);
+  }
+
+  Future<void> getDeviceStreak(String deviceId) async {
+    try {
+      final response = await DioFactory.postData(
+        path: ApiConstants.streak,
+        data: deviceId,
+        token: LocalStorage.token,
+      );
+
+      if (response.statusCode == 200) {
+        currentStreak = response.data['streak'] ?? 0;
+
+        emit(BluetoothStreakUpdated(currentStreak));
+      }
+    } catch (e) {
+      print("❌ Failed to get streak: $e");
+    }
+  }
+
+  Future<void> updateLocationAddress(double lat, double long) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        currentAddress =
+            "${place.locality}, ${place.subAdministrativeArea}, ${place.country}";
+
+        emit(BluetoothLocationUpdated());
+      }
+    } catch (e) {
+      print("❌ Error getting address: $e");
+      currentAddress = "Unknown Location";
+    }
   }
 
   void stopEverything() {

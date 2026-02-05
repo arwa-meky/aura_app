@@ -10,7 +10,6 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
 
   final AuthApiService _apiService = AuthApiService();
 
-  String? token;
   String? email;
 
   final TextEditingController passwordController = TextEditingController();
@@ -24,8 +23,8 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
       return;
     }
 
-    if (token == null || email == null) {
-      emit(ResetPasswordFailure("Missing token or email info"));
+    if (email == null) {
+      emit(ResetPasswordFailure("Missing email info"));
       return;
     }
 
@@ -37,7 +36,6 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
     emit(ResetPasswordLoading());
     try {
       await _apiService.resetPassword(
-        token: token!,
         email: email!,
         newPassword: passwordController.text,
         confirmPassword: confirmPasswordController.text,

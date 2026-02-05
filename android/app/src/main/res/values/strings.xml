@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">aura_project</string>
+    <string name="app_name">Aura Health Monitor</string>
     
     <string name="facebook_app_id">1586345249207513</string>
-    <string name="facebook_client_token">fdf6172473d2e01b9cf7dcda9cde034e</string>
+    
+    <string name="fb_login_protocol_scheme">fb1586345249207513</string>
+    
+    <string name="facebook_client_token">21b923e541d2197da61107b8f51a65b8</string> 
 </resources>

@@ -1,5 +1,7 @@
 import 'package:aura_project/core/helpers/extension.dart';
 import 'package:aura_project/core/router/routes.dart';
+import 'package:aura_project/core/widgets/build_field_label.dart';
+
 import 'package:aura_project/core/widgets/custom_input_label.dart';
 import 'package:aura_project/fratuers/compelete_profile/logic/complete_profile_cubit.dart';
 import 'package:aura_project/fratuers/compelete_profile/logic/complete_profile_state.dart';
@@ -18,27 +20,28 @@ class CompleteProfileScreen extends StatefulWidget {
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   String selectedActivity = 'Moderate';
-  Widget _buildCounterSuffix(TextEditingController controller) {
+  Widget buildCounterSuffix(TextEditingController controller) {
     return Container(
       height: 20,
       width: 20,
       alignment: Alignment.center,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
-            onTap: () {
-              int currentValue = int.tryParse(controller.text) ?? 0;
-              setState(() {
-                controller.text = (currentValue + 1).toString();
-              });
-            },
-            child: const Icon(Icons.arrow_drop_up, color: Colors.grey),
+          Transform.translate(
+            offset: const Offset(0, 6),
+            child: GestureDetector(
+              onTap: () {
+                int currentValue = int.tryParse(controller.text) ?? 0;
+                setState(() {
+                  controller.text = (currentValue + 1).toString();
+                });
+              },
+              child: const Icon(Icons.arrow_drop_up, color: Colors.grey),
+            ),
           ),
 
           Transform.translate(
-            offset: const Offset(0, -6),
+            offset: const Offset(0, -8),
             child: GestureDetector(
               onTap: () {
                 int currentValue = int.tryParse(controller.text) ?? 0;
@@ -159,7 +162,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                             const SizedBox(height: 15),
 
-                            _buildFieldLabel('Gender'),
+                            buildFieldLabel('Gender'),
                             Row(
                               children: [
                                 Expanded(
@@ -173,7 +176,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 Expanded(
                                   child: _buildGenderButton(
                                     cubit,
-                                    'Prefer not \nto say',
+                                    'Prefer not to say',
                                   ),
                                 ),
                               ],
@@ -189,7 +192,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _buildFieldLabel('Date of Birth'),
+                                      buildFieldLabel('Date of Birth'),
                                       GestureDetector(
                                         onTap: () =>
                                             _selectDate(context, cubit),
@@ -203,9 +206,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                               color: Colors.grey,
                                             ),
                                             backgroundColor: const Color(
-                                              0xffEEEEEE,
+                                              0xffFFFFFF,
                                             ),
-                                            hasBorder: false,
+                                            hasBorder: true,
                                           ),
                                         ),
                                       ),
@@ -219,7 +222,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _buildFieldLabel('Your Age'),
+                                      buildFieldLabel('Your Age'),
                                       Container(
                                         height: 56,
                                         alignment: Alignment.center,
@@ -237,8 +240,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                               "${cubit.ageController.text.isEmpty ? '0' : cubit.ageController.text} ",
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                color: Color(0xff2979FF),
-                                                fontSize: 18,
+                                                color: Color(0xff194B96),
+                                                fontSize: 20,
                                               ),
                                             ),
                                             Text(
@@ -266,16 +269,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _buildFieldLabel('Height (cm)'),
+                                      buildFieldLabel('Height (cm)'),
                                       CustomTextField(
                                         controller: cubit.hightController,
                                         hintText: '0',
                                         keyboardType: TextInputType.number,
                                         backgroundColor: const Color(
-                                          0xffEEEEEE,
+                                          0xffFFFFFF,
                                         ),
-                                        hasBorder: false,
-                                        suffixIcon: _buildCounterSuffix(
+                                        hasBorder: true,
+                                        suffixIcon: buildCounterSuffix(
                                           cubit.hightController,
                                         ),
                                       ),
@@ -288,16 +291,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      _buildFieldLabel('Weight (kg)'),
+                                      buildFieldLabel('Weight (kg)'),
                                       CustomTextField(
                                         controller: cubit.weightController,
                                         hintText: '0',
                                         keyboardType: TextInputType.number,
                                         backgroundColor: const Color(
-                                          0xffEEEEEE,
+                                          0xffFFFFFF,
                                         ),
-                                        hasBorder: false,
-                                        suffixIcon: _buildCounterSuffix(
+                                        hasBorder: true,
+                                        suffixIcon: buildCounterSuffix(
                                           cubit.weightController,
                                         ),
                                       ),
@@ -380,20 +383,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  Widget _buildFieldLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-          color: Colors.black87,
-        ),
-      ),
-    );
-  }
-
   Widget _buildGenderButton(CompleteProfileCubit cubit, String gender) {
     bool isSelected = cubit.selectedGender == gender;
     return GestureDetector(
@@ -403,14 +392,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         });
       },
       child: Container(
-        height: context.usableHeight * 0.13,
+        height: context.usableHeight * 0.1,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xffEEEEEE),
+          color: const Color(0xffFFFFFF),
           borderRadius: BorderRadius.circular(12),
           border: isSelected
-              ? Border.all(color: const Color(0xff2979FF))
-              : Border.all(color: Colors.transparent),
+              ? Border.all(color: const Color(0xff194B96))
+              : Border.all(color: Color(0xffE0E0E0)),
         ),
         child: Center(
           child: Text(
@@ -418,8 +407,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.black,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              fontSize: 15,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontSize: 13,
             ),
           ),
         ),
@@ -439,10 +428,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xffEEEEEE),
+          color: const Color(0xffFFFFFF),
           borderRadius: BorderRadius.circular(12),
           border: isSelected
-              ? Border.all(color: Color(0xff2979FF), width: 1.5)
+              ? Border.all(color: Color(0xff194B96), width: 1.5)
               : Border.all(color: Color(0xffE0E0E0)),
         ),
         child: Column(
@@ -453,7 +442,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: isSelected ? Color(0xff2979FF) : Color(0xff212121),
+                color: isSelected ? Color(0xff194B96) : Color(0xff212121),
               ),
             ),
             const SizedBox(height: 4),

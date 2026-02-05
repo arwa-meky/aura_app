@@ -4,6 +4,8 @@ class PermissionState {
   final bool isNotificationGranted;
   final bool isBluetoothGranted;
   final bool isMicGranted;
+  final bool isPhoneGranted;
+  final bool isSmsGranted;
 
   PermissionState({
     this.isLocationGranted = false,
@@ -11,6 +13,8 @@ class PermissionState {
     this.isNotificationGranted = false,
     this.isBluetoothGranted = false,
     this.isMicGranted = false,
+    this.isPhoneGranted = false,
+    this.isSmsGranted = false,
   });
 
   bool get allGranted =>
@@ -18,7 +22,9 @@ class PermissionState {
       isActivityGranted &&
       isNotificationGranted &&
       isBluetoothGranted &&
-      isMicGranted;
+      isMicGranted &&
+      isPhoneGranted &&
+      isSmsGranted;
 
   PermissionState copyWith({
     bool? isLocationGranted,
@@ -26,6 +32,8 @@ class PermissionState {
     bool? isNotificationGranted,
     bool? isBluetoothGranted,
     bool? isMicGranted,
+    bool? isPhoneGranted,
+    bool? isSmsGranted,
   }) {
     return PermissionState(
       isLocationGranted: isLocationGranted ?? this.isLocationGranted,
@@ -34,6 +42,8 @@ class PermissionState {
           isNotificationGranted ?? this.isNotificationGranted,
       isBluetoothGranted: isBluetoothGranted ?? this.isBluetoothGranted,
       isMicGranted: isMicGranted ?? this.isMicGranted,
+      isPhoneGranted: isPhoneGranted ?? this.isPhoneGranted,
+      isSmsGranted: isSmsGranted ?? this.isSmsGranted,
     );
   }
 }

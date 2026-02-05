@@ -20,7 +20,7 @@ class SplachScreen extends StatelessWidget {
           } else if (state is SplashNavigateToWelcome) {
             context.pushNamedAndRemoveAll(Routes.welcome);
           } else if (state is SplashNavigateToHome) {
-            context.pushNamedAndRemoveAll(Routes.home);
+            context.pushNamedAndRemoveAll(Routes.appBar);
           }
         },
         child: Scaffold(

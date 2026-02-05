@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'login_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
@@ -51,7 +52,7 @@ class LoginCubit extends Cubit<LoginState> {
       } else {
         await LocalStorage.clearUserCredentials();
       }
-      emit(LoginSuccess());
+      emit(LoginSuccess(isProfileComplete: true));
     } on DioException catch (e) {
       emit(LoginFailure(handleDioError(e, "Login failed")));
     } catch (e) {
@@ -61,34 +62,53 @@ class LoginCubit extends Cubit<LoginState> {
 
   void loginWithGoogle() async {
     emit(LoginGoogleLoading());
-
     try {
       final googleSignIn = GoogleSignIn(
-        serverClientId: "",
+        serverClientId:
+            "1054613969192-94sm2a01bbpnl41cvnh4i6kjkbecadvm.apps.googleusercontent.com",
         scopes: ['email', "profile"],
       );
-
       final user = await googleSignIn.signIn();
       if (user == null) {
         emit(LoginInitial());
         return;
       }
-
       final auth = await user.authentication;
       final idToken = auth.idToken;
-      if (idToken == null) throw Exception("No idToken");
-
+      if (idToken == null) throw Exception("No idToken found");
       final response = await _apiService.loginWithGoogle(
         googleIdToken: idToken,
       );
-      if (response.data != null && response.data['token'] != null) {
-        await LocalStorage.saveToken(response.data['token']);
-        emit(LoginGoogleSuccess());
+      if (response.data != null && response.data['data']['token'] != null) {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(
+          response.data['data']['token'],
+        );
+
+        print("🔓 Decoded Data: $decodedToken");
+
+        String userId =
+            decodedToken['id'] ??
+            decodedToken['_id'] ??
+            decodedToken['sub'] ??
+            "";
+
+        await LocalStorage.saveToken(response.data['data']['token']);
+
+        if (userId.isNotEmpty) {
+          await LocalStorage.saveUserId(userId);
+          print("✅ User ID Saved: $userId");
+        } else {
+          print("❌ Could not find User ID in token!");
+        }
+        bool isComplete = response.data['isProfileComplete'] ?? false;
+        emit(LoginGoogleSuccess(isProfileComplete: isComplete));
       } else {
-        emit(LoginGoogleFailure("Invaild response from server"));
+        emit(LoginGoogleFailure("Invalid response from server"));
       }
     } catch (e) {
       if (e is DioException) {
+        emit(LoginGoogleFailure(handleDioError(e)));
+      } else {
         emit(LoginGoogleFailure(e.toString()));
       }
     }
@@ -96,27 +116,49 @@ class LoginCubit extends Cubit<LoginState> {
 
   void loginWithFacebook() async {
     emit(LoginFacebookLoading());
-
     try {
       final LoginResult result = await FacebookAuth.instance.login();
-
       if (result.status == LoginStatus.success) {
         final AccessToken accessToken = result.accessToken!;
-
         final response = await _apiService.loginWithFacebook(
           accessToken: accessToken.tokenString,
         );
+        if (response.data != null && response.data['data']['token'] != null) {
+          Map<String, dynamic> decodedToken = JwtDecoder.decode(
+            response.data['data']['token'],
+          );
 
-        await LocalStorage.saveToken(response.data['token']);
+          print("🔓 Decoded Data: $decodedToken");
 
-        emit(LoginFacebookSuccess());
+          String userId =
+              decodedToken['id'] ??
+              decodedToken['_id'] ??
+              decodedToken['sub'] ??
+              "";
+
+          await LocalStorage.saveToken(response.data['data']['token']);
+
+          if (userId.isNotEmpty) {
+            await LocalStorage.saveUserId(userId);
+            print("✅ User ID Saved: $userId");
+          } else {
+            print("❌ Could not find User ID in token!");
+          }
+        }
+
+        bool isComplete = response.data['isProfileComplete'] ?? false;
+        emit(LoginFacebookSuccess(isProfileComplete: isComplete));
+      } else if (result.status == LoginStatus.cancelled) {
+        emit(LoginInitial());
       } else {
-        emit(
-          LoginFacebookFailure(result.message ?? "Facebook login cancelled"),
-        );
+        emit(LoginFacebookFailure(result.message ?? "Facebook login failed"));
       }
     } catch (e) {
-      emit(LoginFacebookFailure(e.toString()));
+      if (e is DioException) {
+        emit(LoginFacebookFailure(handleDioError(e)));
+      } else {
+        emit(LoginFacebookFailure(e.toString()));
+      }
     }
   }
 

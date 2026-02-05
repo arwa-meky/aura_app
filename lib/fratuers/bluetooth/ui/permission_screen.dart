@@ -108,6 +108,23 @@ class PermissionsScreen extends StatelessWidget {
                       onTap: () =>
                           cubit.requestPermission(Permission.microphone),
                     ),
+                    _buildPermissionItem(
+                      icon: Icons.phone,
+                      title: 'Phone Access',
+                      description:
+                          'Allows the app to make emergency calls automatically if a fall is detected.',
+                      isAllowed: state.isPhoneGranted,
+                      onTap: () => cubit.requestPermission(Permission.phone),
+                    ),
+
+                    _buildPermissionItem(
+                      icon: Icons.sms,
+                      title: 'SMS Messages',
+                      description:
+                          'Used to send your location and SOS alerts to your emergency contacts.',
+                      isAllowed: state.isSmsGranted,
+                      onTap: () => cubit.requestPermission(Permission.sms),
+                    ),
 
                     const SizedBox(height: 15),
 
@@ -241,7 +258,7 @@ class PermissionsScreen extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 15,
                     color: Colors.black87,
                   ),
                 ),
@@ -251,7 +268,7 @@ class PermissionsScreen extends StatelessWidget {
                 onTap: isAllowed ? null : onTap,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: 13,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(

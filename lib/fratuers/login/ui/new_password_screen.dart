@@ -26,13 +26,11 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final String email = args['email'];
-    final String code = args['code'];
 
     return BlocProvider(
       create: (context) {
         final cubit = ResetPasswordCubit();
         cubit.email = email;
-        cubit.token = code;
         return cubit;
       },
       child: BlocConsumer<ResetPasswordCubit, ResetPasswordState>(
@@ -140,7 +138,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         hintText: "Enter new password",
                         obscureText: isPasswordObscure,
                         validator: ResetPasswordCubit.passwordValidator,
-                        backgroundColor: const Color(0xffEEEEEE),
+                        backgroundColor: const Color(0xffFFFFFF),
                         hasBorder: true,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -166,7 +164,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         controller: cubit.confirmPasswordController,
                         hintText: "Confirm your new password",
                         obscureText: isConfirmObscure,
-                        backgroundColor: const Color(0xffEEEEEE),
+                        backgroundColor: const Color(0xffFFFFFF),
                         hasBorder: true,
                         validator: (val) {
                           if (val != cubit.passwordController.text) {

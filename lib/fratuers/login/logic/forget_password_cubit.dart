@@ -36,6 +36,21 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     return null;
   }
 
+  void verifyResetOtp({required String code, required String email}) async {
+    emit(VerifyCodeLoading());
+    try {
+      await _apiService.verifyResetCode(email: email, code: code);
+
+      emit(VerifyCodeSuccess());
+    } catch (e) {
+      emit(VerifyCodeFailure(errorMessage: e.toString()));
+    }
+  }
+
+  void resetState() {
+    emit(ForgotPasswordInitial());
+  }
+
   void resendCode() async {
     emit(ForgotPasswordLoading());
     try {

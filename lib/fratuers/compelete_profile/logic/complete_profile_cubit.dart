@@ -29,11 +29,13 @@ class CompleteProfileCubit extends Cubit<CompleteProfileState> {
     try {
       final int age = int.parse(ageController.text);
       final int weight = int.parse(weightController.text);
+      final int hight = int.parse(hightController.text);
 
       await _apiService.completeProfile(
         gender: selectedGender,
         age: age,
         weight: weight,
+        hight: hight,
       );
 
       emit(CompleteProfileSuccess());
@@ -56,6 +58,7 @@ class CompleteProfileCubit extends Cubit<CompleteProfileState> {
   Future<void> close() {
     ageController.dispose();
     weightController.dispose();
+    hightController.dispose();
     return super.close();
   }
 }

@@ -72,4 +72,15 @@ class LocalStorage {
 
     await sharedPreferences.remove(kCachedPassword);
   }
+
+  static Future<void> saveLastSyncTime() async {
+    await sharedPreferences.setString(
+      'last_sync_time',
+      DateTime.now().toIso8601String(),
+    );
+  }
+
+  static String? getLastSyncTime() {
+    return sharedPreferences.getString('last_sync_time');
+  }
 }
