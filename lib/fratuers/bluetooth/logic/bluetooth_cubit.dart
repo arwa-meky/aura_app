@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:aura_project/core/constants.dart';
 import 'package:aura_project/core/helpers/storage/hive_storage_service.dart';
 import 'package:aura_project/core/helpers/storage/local_storage.dart';
@@ -22,6 +23,9 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   final AuthApiService _apiService = AuthApiService();
   int currentStreak = 0;
   String currentAddress = "Finding location...";
+  HealthReadingModel? lastReadings;
+  bool isDeviceConnected = false;
+  StreamSubscription? _connectionSubscription;
 
   StreamSubscription? _scanSubscription;
   StreamSubscription? _dataSubscription;
@@ -35,7 +39,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
     Future.delayed(const Duration(seconds: 2), () {
       emit(BluetoothConnected("Aura Demo Watch"));
-
+      isDeviceConnected = true;
       final String? token = LocalStorage.token;
       if (token != null) SocketService.init(token);
 
@@ -53,8 +57,8 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     final int o2 = 95 + random.nextInt(5);
     final int speed = random.nextInt(10) * 10;
 
-    final bool isSOS = random.nextInt(100) > 89;
-    final bool isFallDetected = random.nextInt(100) > 89;
+    final bool isSOS = random.nextInt(100) > 98;
+    final bool isFallDetected = random.nextInt(100) > 98;
 
     final data = HealthReadingModel(
       userId: LocalStorage.getUserId ?? "demo_user",
@@ -69,10 +73,12 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       sos: isSOS ? 1 : 0,
       shake: isFallDetected ? 1 : 0,
     );
+    lastReadings = data;
 
     await HiveStorageService.saveReading(data);
 
     SocketService.sendHealthData(data.toBackendJson());
+    if (data.lat != 0) updateLocationAddress(data.lat, data.lon);
 
     if (isSOS) {
       NotificationService().startEmergencyCountdown(
@@ -147,21 +153,33 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
     try {
       await device.connect(autoConnect: false);
+      if (Platform.isAndroid) {
+        try {
+          await device.requestMtu(512);
+          print("✅ MTU Requested: 512");
+        } catch (e) {
+          print("⚠️ MTU Request Failed: $e");
+        }
+      }
 
       connectedDevice = device;
+      isDeviceConnected = true;
 
-      _dataSubscription?.cancel();
+      _connectionSubscription?.cancel();
 
-      _dataSubscription = device.connectionState.listen((
+      _connectionSubscription = device.connectionState.listen((
         BluetoothConnectionState state,
       ) async {
         if (state == BluetoothConnectionState.disconnected) {
+          isDeviceConnected = false;
           print("Device disconnected! Attempting auto-reconnect...");
           try {
             await device.connect(autoConnect: true);
           } catch (e) {
             print("Auto-reconnect failed: $e");
           }
+        } else if (state == BluetoothConnectionState.connected) {
+          isDeviceConnected = true;
         }
       });
 
@@ -187,7 +205,9 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       emit(BluetoothConnected(deviceName));
 
       _discoverAndSubscribe(device);
+      getDeviceStreak(deviceId);
     } catch (e) {
+      isDeviceConnected = false;
       device.disconnect();
       emit(BluetoothError("Connection failed: $e"));
     }
@@ -294,10 +314,14 @@ class BluetoothCubit extends Cubit<BluetoothState> {
         jsonData,
         currentUserId,
       );
-
+      lastReadings = data;
       await HiveStorageService.saveReading(data);
 
       SocketService.sendHealthData(data.toBackendJson());
+
+      if (data.lat != 0 && data.lon != 0) {
+        _updateAddressBackground(data.lat, data.lon);
+      }
 
       if (data.isSOSActive) {
         NotificationService().startEmergencyCountdown(
@@ -386,28 +410,33 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       if (response.statusCode == 200) {
         currentStreak = response.data['streak'] ?? 0;
 
-        emit(BluetoothStreakUpdated(currentStreak));
+        if (lastReadings != null) {
+          emit(BluetoothDataReceived(lastReadings!));
+        } else {
+          emit(BluetoothStreakUpdated(currentStreak));
+        }
       }
     } catch (e) {
       print("❌ Failed to get streak: $e");
     }
   }
 
-  Future<void> updateLocationAddress(double lat, double long) async {
+  Future<void> _updateAddressBackground(double lat, double long) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
-
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
         currentAddress =
             "${place.locality}, ${place.subAdministrativeArea}, ${place.country}";
-
-        emit(BluetoothLocationUpdated());
       }
     } catch (e) {
-      print("❌ Error getting address: $e");
-      currentAddress = "Unknown Location";
+      print("Address Error: $e");
     }
+  }
+
+  Future<void> updateLocationAddress(double lat, double long) async {
+    await _updateAddressBackground(lat, long);
+    emit(BluetoothLocationUpdated());
   }
 
   void stopEverything() {

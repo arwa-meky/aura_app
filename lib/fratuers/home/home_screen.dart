@@ -53,24 +53,27 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
         builder: (context, state) {
+          final lastData = cubit.lastReadings;
           int hr = 0;
           int spo2 = 0;
           int speed = 0;
           int steps = 0;
-          bool isConnected = false;
           int deviceStatus = 0;
           int battery = 75;
-          if (state is BluetoothDataReceived) {
-            hr = state.data.heartRate;
-            spo2 = state.data.oxygen;
-            speed = state.data.speed;
-            steps = state.data.steps;
-            deviceStatus = state.data.position;
-            isConnected = true;
+
+          if (lastData != null) {
+            hr = lastData.heartRate;
+            spo2 = lastData.oxygen;
+            speed = lastData.speed;
+            steps = lastData.steps;
+            deviceStatus = lastData.position;
+
             timeAgo = "Just now";
-          } else if (state is BluetoothConnected) {
-            isConnected = true;
           }
+          bool isConnected =
+              cubit.isDeviceConnected ||
+              state is BluetoothConnected ||
+              state is BluetoothDataReceived;
 
           final statusAttr = _getStatusAttributes(deviceStatus);
           final currentAddress = cubit.currentAddress;
