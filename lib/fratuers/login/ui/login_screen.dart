@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
         listener: (context, state) {
           void navigateUser(bool isComplete) {
             if (isComplete) {
-              context.pushNamedAndRemoveAll(Routes.home);
+              context.pushNamedAndRemoveAll(Routes.appBar);
             } else {
               context.pushNamedAndRemoveAll(Routes.completeProfile);
             }

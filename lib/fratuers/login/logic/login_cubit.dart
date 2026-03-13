@@ -79,9 +79,9 @@ class LoginCubit extends Cubit<LoginState> {
       final response = await _apiService.loginWithGoogle(
         googleIdToken: idToken,
       );
-      if (response.data != null && response.data['data']['token'] != null) {
+      if (response.data != null && response.data['accessToken'] != null) {
         Map<String, dynamic> decodedToken = JwtDecoder.decode(
-          response.data['data']['token'],
+          response.data['accessToken'],
         );
 
         print("🔓 Decoded Data: $decodedToken");
@@ -92,7 +92,7 @@ class LoginCubit extends Cubit<LoginState> {
             decodedToken['sub'] ??
             "";
 
-        await LocalStorage.saveToken(response.data['data']['token']);
+        await LocalStorage.saveToken(response.data['accessToken']);
 
         if (userId.isNotEmpty) {
           await LocalStorage.saveUserId(userId);
@@ -100,7 +100,7 @@ class LoginCubit extends Cubit<LoginState> {
         } else {
           print("❌ Could not find User ID in token!");
         }
-        bool isComplete = response.data['isProfileComplete'] ?? false;
+        bool isComplete = response.data['user']['isProfileComplete'];
         emit(LoginGoogleSuccess(isProfileComplete: isComplete));
       } else {
         emit(LoginGoogleFailure("Invalid response from server"));
@@ -123,9 +123,9 @@ class LoginCubit extends Cubit<LoginState> {
         final response = await _apiService.loginWithFacebook(
           accessToken: accessToken.tokenString,
         );
-        if (response.data != null && response.data['data']['token'] != null) {
+        if (response.data != null && response.data['accessToken'] != null) {
           Map<String, dynamic> decodedToken = JwtDecoder.decode(
-            response.data['data']['token'],
+            response.data['accessToken'],
           );
 
           print("🔓 Decoded Data: $decodedToken");
@@ -136,7 +136,7 @@ class LoginCubit extends Cubit<LoginState> {
               decodedToken['sub'] ??
               "";
 
-          await LocalStorage.saveToken(response.data['data']['token']);
+          await LocalStorage.saveToken(response.data['accessToken']);
 
           if (userId.isNotEmpty) {
             await LocalStorage.saveUserId(userId);
@@ -146,7 +146,7 @@ class LoginCubit extends Cubit<LoginState> {
           }
         }
 
-        bool isComplete = response.data['isProfileComplete'] ?? false;
+        bool isComplete = response.data['user']['isProfileComplete'] ?? false;
         emit(LoginFacebookSuccess(isProfileComplete: isComplete));
       } else if (result.status == LoginStatus.cancelled) {
         emit(LoginInitial());

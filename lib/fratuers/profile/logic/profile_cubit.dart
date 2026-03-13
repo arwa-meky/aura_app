@@ -4,6 +4,7 @@ import 'package:aura_project/core/networking/api_constants.dart';
 import 'package:aura_project/core/networking/dio_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:country_code_picker/country_code_picker.dart';
@@ -271,6 +272,10 @@ class ProfileCubit extends Cubit<ProfileState> {
       print("Logout API Error: $e");
     } finally {
       await LocalStorage.clearToken();
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
       currentUser = null;
       emit(ProfileLogOutSuccess());
     }

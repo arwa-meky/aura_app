@@ -107,16 +107,19 @@ class AuthApiService {
   }
 
   Future<Response> loginWithGoogle({required String googleIdToken}) async {
+    String role = 'patient';
     return await DioFactory.postData(
       path: ApiConstants.loginWithGoogle,
-      data: {'idToken': googleIdToken},
+      data: {'idToken': googleIdToken, 'role': role},
     );
   }
 
   Future<Response> loginWithFacebook({required String accessToken}) async {
+    String role = 'patient';
+
     return await DioFactory.postData(
       path: ApiConstants.loginWithFacebook,
-      data: {'accessToken': accessToken},
+      data: {'accessToken': accessToken, 'role': role},
     );
   }
 

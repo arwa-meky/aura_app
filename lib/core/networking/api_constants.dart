@@ -5,7 +5,7 @@ class ApiConstants {
   static const String register = 'api/v1/users/auth/signup';
   static const String forgotPassword =
       "api/v1/users/auth/forget-password-mobile";
-  static const String loginWithGoogle = "api/v1/users/auth/google";
+  static const String loginWithGoogle = "api/v1/mobile/auth/google";
   static const String logout = "api/v1/users/auth/logout";
   static const String validateOtp = "api/v1/users/auth/validate-otp";
   static const String completeProfile = "api/v1/users/auth/complete-profile";
@@ -15,7 +15,7 @@ class ApiConstants {
   static const String linkDevice = "api/v1/mobile/devices/pair-device";
   static const String pairedDevices = "api/v1/mobile/devices";
   static const String disconnectDevice = "api/v1/mobile/devices";
-  static const String loginWithFacebook = "api/v1/users/auth/facebook";
+  static const String loginWithFacebook = "api/v1/mobile/auth/facebook";
   static const String getHealthData = "api/v1/data";
   static const String streak = "api/v1/streak";
   static const String updateCompleteProfile =
