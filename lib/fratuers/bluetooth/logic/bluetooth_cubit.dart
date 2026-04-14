@@ -8,14 +8,18 @@ import 'package:aura_project/core/networking/api_constants.dart';
 import 'package:aura_project/core/networking/auth_api_service.dart';
 import 'package:aura_project/core/networking/dio_factory.dart';
 import 'package:aura_project/core/networking/socket_service.dart';
+import 'package:aura_project/core/services/background_service.dart';
 import 'package:aura_project/fratuers/bluetooth/logic/bluetooth_state.dart';
 import 'package:aura_project/fratuers/bluetooth/model/health_reading_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart' hide BluetoothState;
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:aura_project/core/services/notification_service.dart';
-import 'dart:math'; //for demo
+import 'dart:math';
+
+import 'package:shared_preferences/shared_preferences.dart'; //for demo
 
 class BluetoothCubit extends Cubit<BluetoothState> {
   BluetoothCubit() : super(BluetoothInitial());
@@ -33,20 +37,49 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   List<ScanResult> _scanResults = [];
   Timer? _simulationTimer; //for demo
 
-  void startSimulation() {
-    //for demo
+  Future<void> _initForegroundTask() async {
+    FlutterForegroundTask.init(
+      androidNotificationOptions: AndroidNotificationOptions(
+        channelId: 'aura_monitoring',
+        channelName: 'AURA Monitoring',
+        channelImportance: NotificationChannelImportance.HIGH,
+        priority: NotificationPriority.HIGH,
+      ),
+      iosNotificationOptions: const IOSNotificationOptions(
+        showNotification: true,
+        playSound: false,
+      ),
+      foregroundTaskOptions: ForegroundTaskOptions(
+        eventAction: ForegroundTaskEventAction.repeat(5000),
+        autoRunOnBoot: true,
+        allowWakeLock: true,
+      ),
+    );
+  }
+
+  void startSimulation() async {
     emit(BluetoothConnecting());
 
-    Future.delayed(const Duration(seconds: 2), () {
-      emit(BluetoothConnected("Aura Demo Watch"));
-      isDeviceConnected = true;
-      final String? token = LocalStorage.token;
-      if (token != null) SocketService.init(token);
+    await Future.delayed(const Duration(seconds: 2));
+    //for demo
+    isDeviceConnected = true;
+    const String demoDeviceId = "DEMO_DEVICE_AURA_001";
 
-      _simulationTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-        _generateFakeData();
-      });
+    emit(BluetoothConnected("Aura Demo Watch"));
+
+    await getDeviceStreak(demoDeviceId);
+
+    final String? token = LocalStorage.token;
+    if (token != null) SocketService.init(token);
+    _simulationTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      _generateFakeData();
     });
+    await _initForegroundTask();
+    await FlutterForegroundTask.startService(
+      notificationTitle: 'AURA: وضع المحاكاة نشط',
+      notificationText: 'جاري محاولة محاكاة البيانات والـ Streak...',
+      callback: startCallback,
+    );
   }
 
   void _generateFakeData() async {
@@ -72,6 +105,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       position: 0,
       sos: isSOS ? 1 : 0,
       shake: isFallDetected ? 1 : 0,
+      battery: 0,
     );
     lastReadings = data;
 
@@ -164,6 +198,12 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
       connectedDevice = device;
       isDeviceConnected = true;
+      await _initForegroundTask();
+      await FlutterForegroundTask.startService(
+        notificationTitle: 'AURA: المراقبة نشطة',
+        notificationText: 'جاري استلام البيانات وإرسالها للسيرفر...',
+        callback: startCallback,
+      );
 
       _connectionSubscription?.cancel();
 
@@ -172,7 +212,21 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       ) async {
         if (state == BluetoothConnectionState.disconnected) {
           isDeviceConnected = false;
-          print("Device disconnected! Attempting auto-reconnect...");
+          emit(
+            BluetoothError(
+              "⚠️ Device disconnected! Attempting auto-reconnect...",
+            ),
+          );
+          NotificationService().showInstantNotification(
+            title: "Device disconnected",
+            body: "Device disconnected! Attempting auto-reconnect...",
+          );
+
+          print(
+            "Device disconnected! Attempting auto-reconnect in 5 seconds...",
+          );
+
+          await Future.delayed(const Duration(seconds: 5));
           try {
             await device.connect(autoConnect: true);
           } catch (e) {
@@ -180,6 +234,11 @@ class BluetoothCubit extends Cubit<BluetoothState> {
           }
         } else if (state == BluetoothConnectionState.connected) {
           isDeviceConnected = true;
+          NotificationService().showInstantNotification(
+            title: "connection done",
+            body: "your watch is connecting again",
+          );
+          emit(BluetoothConnected(device.platformName));
         }
       });
 
@@ -395,6 +454,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
       Permission.location,
+      Permission.notification,
     ].request();
     return statuses.values.every((status) => status.isGranted);
   }
@@ -404,7 +464,6 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       final response = await DioFactory.postData(
         path: ApiConstants.streak,
         data: deviceId,
-        token: LocalStorage.token,
       );
 
       if (response.statusCode == 200) {
@@ -437,6 +496,16 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   Future<void> updateLocationAddress(double lat, double long) async {
     await _updateAddressBackground(lat, long);
     emit(BluetoothLocationUpdated());
+  }
+
+  Future<void> saveLastSteps(int steps) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_steps', steps);
+  }
+
+  Future<int> getLastSteps() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('last_steps') ?? 0;
   }
 
   void stopEverything() {

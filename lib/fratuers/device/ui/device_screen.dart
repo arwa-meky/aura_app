@@ -25,9 +25,9 @@ class DeviceScreen extends StatelessWidget {
               title: const Text(
                 "Device",
                 style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 22,
+                  color: Color(0xff212121),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
                 ),
               ),
             ),
@@ -459,7 +459,7 @@ class DeviceScreen extends StatelessWidget {
             child: Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: Colors.white,
+              activeThumbColor: Colors.white,
               activeTrackColor: const Color(0xff194B96),
               inactiveThumbColor: Colors.white,
               inactiveTrackColor: const Color(0xffD1D1D1),

@@ -26,6 +26,12 @@ void main() async {
   Hive.registerAdapter(HistoryItemAdapter());
   await Hive.openBox<HistoryItem>('health_history');
   DioFactory.init();
+  DioFactory.onSessionExpired = () {
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      Routes.login,
+      (route) => false,
+    );
+  };
   await NotificationService().init();
   await NotificationHelper.init();
   SystemChrome.setPreferredOrientations([
@@ -52,6 +58,7 @@ class AuraApp extends StatelessWidget {
       title: 'Aura Health Monitor',
       theme: AppThemes.theme,
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       onGenerateRoute: AppRouter().onGenerateRoute,
       initialRoute: Routes.splash,
     );

@@ -40,6 +40,9 @@ class HealthReadingModel extends HiveObject {
   @HiveField(11)
   final bool isSynced;
 
+  @HiveField(12)
+  final int battery;
+
   bool get isSOSActive => sos == 1;
   bool get isFallDetected => shake == 1;
 
@@ -55,6 +58,7 @@ class HealthReadingModel extends HiveObject {
     required this.position,
     required this.sos,
     required this.shake,
+    required this.battery,
     this.isSynced = false,
   });
 
@@ -114,6 +118,7 @@ class HealthReadingModel extends HiveObject {
 
       sos: boolToInt(json['SOS']),
       shake: boolToInt(json['SHAKE'] ?? json['SHK']),
+      battery: toInt(json['BAT']), // افترضت أن الكي هو 'BAT'
 
       isSynced: false,
     );
@@ -130,9 +135,9 @@ class HealthReadingModel extends HiveObject {
         "steps": steps,
         "gps": {"lat": lat, "lon": lon},
         "Sitting or Standing": position,
-        "Walking or Running": 0,
         "SOS": sos,
         "Shake": shake,
+        "battery": battery,
       },
     };
   }

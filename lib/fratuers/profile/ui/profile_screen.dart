@@ -2,6 +2,7 @@ import 'package:aura_project/core/router/routes.dart';
 import 'package:aura_project/fratuers/profile/logic/profile_cubit.dart';
 import 'package:aura_project/fratuers/profile/logic/profile_state.dart';
 import 'package:aura_project/fratuers/profile/ui/universal_settings_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -39,9 +40,9 @@ class ProfileScreen extends StatelessWidget {
             title: const Text(
               "Profile",
               style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w600,
-                fontSize: 22,
+                color: Color(0xff212121),
+                fontWeight: FontWeight.w500,
+                fontSize: 20,
               ),
             ),
           ),
@@ -65,14 +66,19 @@ class ProfileScreen extends StatelessWidget {
                               backgroundImage: cubit.profileImage != null
                                   ? FileImage(cubit.profileImage!)
                                         as ImageProvider
-                                  : (user.photoUrl != null)
-                                  ? NetworkImage(user.photoUrl!)
-                                        as ImageProvider
+                                  : (user.photoUrl != null &&
+                                        user.photoUrl!.isNotEmpty)
+                                  ? CachedNetworkImageProvider(user.photoUrl!)
                                   : null,
                               child:
                                   (cubit.profileImage == null &&
-                                      user.photoUrl == null)
-                                  ? const Icon(Icons.person, size: 50)
+                                      (user.photoUrl == null ||
+                                          user.photoUrl!.isEmpty))
+                                  ? const Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: Colors.white,
+                                    )
                                   : null,
                             ),
 

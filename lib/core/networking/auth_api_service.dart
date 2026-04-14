@@ -1,4 +1,3 @@
-import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:aura_project/core/networking/api_constants.dart';
 import 'package:aura_project/core/networking/dio_factory.dart';
 import 'package:dio/dio.dart';
@@ -56,16 +55,11 @@ class AuthApiService {
     return await DioFactory.postData(
       path: ApiConstants.completeProfile,
       data: {'gender': gender, 'age': age, 'weight': weight, 'height': hight},
-      token: LocalStorage.token,
     );
   }
 
   Future<Response> logout() async {
-    return await DioFactory.postData(
-      path: ApiConstants.logout,
-      data: {},
-      token: LocalStorage.token,
-    );
+    return await DioFactory.postData(path: ApiConstants.logout, data: {});
   }
 
   Future<Response> forgotPassword({required String email}) async {
@@ -102,7 +96,6 @@ class AuthApiService {
         'newPassword': newPassword,
         'passwordConfirm': confirmPassword,
       },
-      token: LocalStorage.token,
     );
   }
 
@@ -142,36 +135,38 @@ class AuthApiService {
     return await DioFactory.postData(
       path: ApiConstants.linkDevice,
       data: {'deviceId': deviceId, 'deviceName': deviceName},
-      token: LocalStorage.token,
     );
   }
 
   Future<Response> getPairedDevices() async {
-    return await DioFactory.getData(
-      path: ApiConstants.pairedDevices,
-      token: LocalStorage.token,
-    );
+    return await DioFactory.getData(path: ApiConstants.pairedDevices);
   }
 
   Future<Response> unlinkDevice({required String deviceId}) async {
     return await DioFactory.deleteData(
       path: '${ApiConstants.disconnectDevice}/$deviceId',
-      token: LocalStorage.token,
     );
   }
 
   Future<Response> getPatientProfile() async {
-    return await DioFactory.getData(
-      path: ApiConstants.profileData,
-      token: LocalStorage.token,
+    return await DioFactory.getData(path: ApiConstants.profileData);
+  }
+
+  Future<Response> updateProfileData(Map<String, dynamic> data) async {
+    return await DioFactory.postData(
+      path: ApiConstants.updateCompleteProfile,
+      data: data,
     );
   }
 
-  Future<Response> updatePatientProfile({required FormData formData}) async {
+  Future<Response> updateProfileImage(String imagePath) async {
+    FormData formData = FormData.fromMap({
+      "photo": await MultipartFile.fromFile(imagePath, filename: "profile.jpg"),
+    });
+
     return await DioFactory.postData(
-      path: ApiConstants.updateCompleteProfile,
+      path: ApiConstants.userPhoto,
       data: formData,
-      token: LocalStorage.token,
     );
   }
 }

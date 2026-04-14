@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:aura_project/core/helpers/storage/local_storage.dart';
-import 'package:aura_project/core/networking/api_constants.dart';
-import 'package:aura_project/core/networking/dio_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -146,26 +144,31 @@ class ProfileCubit extends Cubit<ProfileState> {
       if (cleanPhone.startsWith('0')) {
         cleanPhone = cleanPhone.substring(1);
       }
-
       String fullPhoneNumber = "$selectedCountryCode$cleanPhone";
 
-      print("📤 Sending Phone: $fullPhoneNumber");
-      final Map<String, dynamic> jsonData = {
+      final Map<String, dynamic> dataMap = {
         "mobilePhone": fullPhoneNumber,
         "weight": weightController.text,
         "height": heightController.text,
         "age": _calculatedAge,
+        "gender": selectedGender,
       };
 
-      print("📤 Sending JSON: $jsonData");
+      final dataResponse = await _apiService.updateProfileData(dataMap);
 
-      final response = await DioFactory.postData(
-        path: ApiConstants.updateCompleteProfile,
-        data: jsonData,
-        token: LocalStorage.token,
-      );
+      if (dataResponse.statusCode == 200 || dataResponse.statusCode == 201) {
+        if (profileImage != null) {
+          print("📸 Uploading Profile Image...");
+          final imageResponse = await _apiService.updateProfileImage(
+            profileImage!.path,
+          );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+          if (imageResponse.statusCode != 200 &&
+              imageResponse.statusCode != 201) {
+            print("⚠️ Data updated, but Image upload failed");
+          }
+        }
+
         emit(ProfileInfoUpdateSuccess());
         await getUserData();
       }

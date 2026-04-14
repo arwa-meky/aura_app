@@ -21,4 +21,5 @@ class ApiConstants {
   static const String updateCompleteProfile =
       "api/v1/users/auth/update-complete-profile";
   static const String profileData = 'api/v1/patients/about-me';
+  static const String userPhoto = 'api/v1/users/auth/upload-user-photo';
 }

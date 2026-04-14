@@ -43,9 +43,10 @@ class _AddEventScreenState extends State<AddEventScreen> {
         ),
         title: Text(
           widget.eventToEdit == null ? "Add new Event" : "Edit Event",
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
+            color: Color(0xff212121),
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
           ),
         ),
         centerTitle: true,

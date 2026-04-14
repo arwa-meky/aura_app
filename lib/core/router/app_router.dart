@@ -21,6 +21,8 @@ import 'package:aura_project/fratuers/splach/ui/splach_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class AppRouter {
   Route onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {

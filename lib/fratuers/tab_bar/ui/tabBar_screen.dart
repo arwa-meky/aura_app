@@ -1,3 +1,5 @@
+// import 'package:aura_project/core/networking/dio_factory.dart';
+// import 'package:aura_project/core/router/routes.dart';
 import 'package:aura_project/fratuers/profile/logic/profile_cubit.dart';
 import 'package:aura_project/fratuers/tab_bar/logic/tabBar_cubit.dart';
 import 'package:aura_project/fratuers/tab_bar/logic/tabBar_state.dart';
@@ -5,9 +7,14 @@ import 'package:aura_project/fratuers/trends/logic/trends_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class LayoutScreen extends StatelessWidget {
+class LayoutScreen extends StatefulWidget {
   const LayoutScreen({super.key});
 
+  @override
+  State<LayoutScreen> createState() => _LayoutScreenState();
+}
+
+class _LayoutScreenState extends State<LayoutScreen> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(

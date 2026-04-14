@@ -28,6 +28,7 @@ class HealthReadingModelAdapter extends TypeAdapter<HealthReadingModel> {
       position: fields[8] as int,
       sos: fields[9] as int,
       shake: fields[10] as int,
+      battery: fields[12] as int,
       isSynced: fields[11] as bool,
     );
   }
@@ -35,7 +36,7 @@ class HealthReadingModelAdapter extends TypeAdapter<HealthReadingModel> {
   @override
   void write(BinaryWriter writer, HealthReadingModel obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.userId)
       ..writeByte(1)
@@ -59,7 +60,9 @@ class HealthReadingModelAdapter extends TypeAdapter<HealthReadingModel> {
       ..writeByte(10)
       ..write(obj.shake)
       ..writeByte(11)
-      ..write(obj.isSynced);
+      ..write(obj.isSynced)
+      ..writeByte(12)
+      ..write(obj.battery);
   }
 
   @override

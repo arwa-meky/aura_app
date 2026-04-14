@@ -26,8 +26,9 @@ class CalendarScreen extends StatelessWidget {
               title: const Text(
                 "Calendar",
                 style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
+                  color: Color(0xff212121),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
                 ),
               ),
               centerTitle: true,

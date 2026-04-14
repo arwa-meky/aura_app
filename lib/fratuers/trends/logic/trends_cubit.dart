@@ -1,4 +1,3 @@
-import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:aura_project/core/networking/api_constants.dart';
 import 'package:aura_project/core/networking/dio_factory.dart';
 import 'package:aura_project/fratuers/trends/model/hive_helper.dart';
@@ -41,10 +40,7 @@ class TrendsCubit extends Cubit<TrendsState> {
   }
 
   Future<void> _getDailyFromApi() async {
-    final response = await DioFactory.getData(
-      path: ApiConstants.getHealthData,
-      token: LocalStorage.token,
-    );
+    final response = await DioFactory.getData(path: ApiConstants.getHealthData);
 
     if (response.statusCode == 200) {
       List<dynamic> apiList = [];

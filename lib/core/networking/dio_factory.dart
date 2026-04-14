@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'dart:ui';
 import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:aura_project/core/networking/api_constants.dart';
 import 'package:cookie_jar/cookie_jar.dart';
@@ -10,63 +10,86 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class DioFactory {
   static late Dio dio;
+  static late Dio _refreshDio;
+  static VoidCallback? onSessionExpired;
+
   static Future<void> init() async {
     final Directory appDocDir = await getApplicationDocumentsDirectory();
     final String appDocPath = appDocDir.path;
     final jar = PersistCookieJar(storage: FileStorage("$appDocPath/.cookies/"));
 
     const timeout = Duration(seconds: 120);
+
     dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         connectTimeout: timeout,
         receiveTimeout: timeout,
         sendTimeout: timeout,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       ),
     );
 
+    _refreshDio = Dio(
+      BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
+        connectTimeout: timeout,
+        receiveTimeout: timeout,
+      ),
+    );
+    _refreshDio.interceptors.add(CookieManager(jar));
+
     dio.interceptors.addAll([
       CookieManager(jar),
-
       InterceptorsWrapper(
         onRequest: (options, handler) {
           final token = LocalStorage.token;
-          if (token != null) {
+          if (token != null && !options.headers.containsKey('Authorization')) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
 
         onError: (DioException error, handler) async {
-          if (error.response?.statusCode == 401) {
+          bool isTokenExpired =
+              error.response?.statusCode == 401 ||
+              (error.response?.data != null &&
+                  (error.response?.data['message'] == "jwt expired" ||
+                      error.response?.data['message'] == "Unauthorized"));
+
+          if (isTokenExpired) {
             if (error.requestOptions.path.contains('refresh-token')) {
+              await _forceLogout();
               return handler.next(error);
             }
 
-            print("⚠️ Token Expired! Attempting to refresh...");
-
             try {
-              final response = await dio.get('users/auth/refresh-token');
+              print("⚠️ Session expired. Attempting to refresh token...");
+
+              final response = await _refreshDio.get(
+                '/api/v1/users/auth/refresh-token',
+              );
 
               if (response.statusCode == 200) {
-                String newToken = response.data['token'];
-
-                print("✅ Token Refreshed Successfully!");
+                String newToken =
+                    response.data['token'] ?? response.data['data']?['token'];
 
                 await LocalStorage.saveToken(newToken);
+                print("✅ Token refreshed successfully.");
 
-                final RequestOptions requestOptions = error.requestOptions;
+                final opts = error.requestOptions;
+                opts.headers['Authorization'] = 'Bearer $newToken';
 
-                requestOptions.headers['Authorization'] = 'Bearer $newToken';
-
-                final clonedRequest = await dio.fetch(requestOptions);
-
-                return handler.resolve(clonedRequest);
+                final retryResponse = await dio.fetch(opts);
+                return handler.resolve(retryResponse);
               }
             } catch (e) {
-              print("❌ Refresh Token Failed: $e");
-              await LocalStorage.clearToken();
+              print("❌ Refresh flow failed: $e");
+              await _forceLogout();
+              return handler.next(error);
             }
           }
           return handler.next(error);
@@ -74,9 +97,8 @@ class DioFactory {
       ),
 
       PrettyDioLogger(
-        request: true,
-        requestBody: true,
         requestHeader: true,
+        requestBody: true,
         responseBody: true,
         error: true,
         compact: true,
@@ -84,95 +106,53 @@ class DioFactory {
     ]);
   }
 
+  static Future<void> _forceLogout() async {
+    print("🚨 Force Logout Triggered");
+    await LocalStorage.clearToken();
+    if (onSessionExpired != null) {
+      onSessionExpired!();
+    }
+  }
+
   static Future<Response> postData({
     required String path,
     required dynamic data,
-    String? token,
   }) async {
-    Map<String, dynamic> headers = {
-      'Content-Type': data is FormData
-          ? 'multipart/form-data'
-          : 'application/json',
-    };
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
-    final response = await dio.post(
+    return await dio.post(
       path,
       data: data,
-      options: Options(headers: headers),
+      options: Options(
+        headers: {
+          'Content-Type': data is FormData
+              ? 'multipart/form-data'
+              : 'application/json',
+        },
+      ),
     );
-
-    return response;
-  }
-
-  static Future<Response> putData({
-    required String path,
-    required Map<String, dynamic> data,
-    String? token,
-  }) async {
-    Map<String, dynamic> headers = {};
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
-    final response = await dio.put(
-      path,
-      data: data,
-      options: Options(headers: headers),
-    );
-    return response;
   }
 
   static Future<Response> getData({
     required String path,
     Map<String, dynamic>? queryParameters,
-    String? token,
   }) async {
-    Map<String, dynamic> headers = {'Accept': 'application/json'};
+    return await dio.get(path, queryParameters: queryParameters);
+  }
 
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
-    final response = await dio.get(
-      path,
-      queryParameters: queryParameters,
-      options: Options(headers: headers),
-    );
-
-    return response;
+  static Future<Response> putData({
+    required String path,
+    required Map<String, dynamic> data,
+  }) async {
+    return await dio.put(path, data: data);
   }
 
   static Future<Response> patchData({
     required String path,
     required Map<String, dynamic> data,
-    String? token,
   }) async {
-    Map<String, dynamic> headers = {};
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    final response = await dio.patch(
-      path,
-      data: data,
-      options: Options(headers: headers),
-    );
-    return response;
+    return await dio.patch(path, data: data);
   }
 
-  static Future<Response> deleteData({
-    required String path,
-    String? token,
-  }) async {
-    Map<String, dynamic> headers = {};
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
-    final response = await dio.delete(path, options: Options(headers: headers));
-    return response;
+  static Future<Response> deleteData({required String path}) async {
+    return await dio.delete(path);
   }
 }

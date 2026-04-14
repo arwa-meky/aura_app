@@ -122,7 +122,7 @@ class NotificationScreen extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
             activeTrackColor: const Color(0xff194B96),
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: const Color(0xffACACAC),

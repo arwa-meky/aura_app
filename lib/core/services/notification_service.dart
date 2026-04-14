@@ -156,4 +156,28 @@ class NotificationService {
       platformDetails,
     );
   }
+
+  Future<void> showInstantNotification({
+    required String title,
+    required String body,
+  }) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'connection_status_channel',
+          'حالة الاتصال',
+          importance: Importance.max,
+          priority: Priority.high,
+        );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+    );
+  }
 }
