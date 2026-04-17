@@ -31,11 +31,23 @@ class CompleteProfileCubit extends Cubit<CompleteProfileState> {
       final int weight = int.parse(weightController.text);
       final int hight = int.parse(hightController.text);
 
+      // Convert dobController.text to YYYY-MM-DD if needed
+      String dob = dobController.text;
+      // Accept both DD/MM/YYYY and YYYY-MM-DD, convert if needed
+      if (dob.contains('/')) {
+        final parts = dob.split('/');
+        if (parts.length == 3) {
+          dob =
+              "${parts[2].padLeft(4, '0')}-${parts[1].padLeft(2, '0')}-${parts[0].padLeft(2, '0')}";
+        }
+      }
+
       await _apiService.completeProfile(
         gender: selectedGender,
         age: age,
         weight: weight,
         hight: hight,
+        dateOfBirth: dob,
       );
 
       emit(CompleteProfileSuccess());

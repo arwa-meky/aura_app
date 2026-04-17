@@ -51,10 +51,17 @@ class AuthApiService {
     required int age,
     required int weight,
     required int hight,
+    required String dateOfBirth,
   }) async {
     return await DioFactory.postData(
       path: ApiConstants.completeProfile,
-      data: {'gender': gender, 'age': age, 'weight': weight, 'height': hight},
+      data: {
+        'gender': gender,
+        'age': age,
+        'weight': weight,
+        'height': hight,
+        'dateOfBirth': dateOfBirth,
+      },
     );
   }
 
