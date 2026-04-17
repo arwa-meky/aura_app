@@ -72,7 +72,7 @@ class HelpCenterScreen extends StatelessWidget {
                 _launchEmail();
               },
               child: const Text(
-                "aura.smart.watch@gmail.com",
+                "support@aurahealth.dev",
                 style: TextStyle(
                   fontSize: 16,
                   color: Color(0xff194B96),
@@ -137,7 +137,7 @@ class HelpCenterScreen extends StatelessWidget {
   Future<void> _launchEmail() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'aura.smart.watch@gmail.com',
+      path: 'support@aurahealth.dev',
       query: 'subject=Support Request&body=Hello AURA Support,',
     );
     launchUrl(emailLaunchUri);

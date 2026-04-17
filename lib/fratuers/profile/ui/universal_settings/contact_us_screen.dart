@@ -55,8 +55,8 @@ class ContactUsScreen extends StatelessWidget {
               ),
 
               child: Text(
-                'aura.smart.watch@gmail.com',
-                style: TextStyle(color: Color(0xff616161)),
+                'support@aurahealth.dev',
+                styple: TextStyle(color: Color(0xff616161)),
               ),
             ),
             const SizedBox(height: 20),
@@ -193,7 +193,7 @@ class ContactUsScreen extends StatelessWidget {
   void _sendEmail() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'aura.smart.watch@gmail.com',
+      path: 'support@aurahealth.dev',
       query:
           'subject=Aura Support&body=${Uri.encodeComponent(messageController.text)}',
     );
