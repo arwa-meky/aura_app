@@ -43,8 +43,8 @@ class SocketService {
     // - ds server
     // - DS server => backend server => mobile
     socket.on('alert response', (data) {
+      print('🔦🔦 🔦ARLERT🔦🔦🔦');
       print(data);
-
       // TODO:
       // - Convert to AlertModel
       // - Show notification

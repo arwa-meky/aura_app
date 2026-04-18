@@ -1,6 +1,6 @@
 class ApiConstants {
   ApiConstants._();
-  static const String baseUrl = "http://192.168.1.10:3000/";
+  static const String baseUrl = "http://192.168.1.5:3000/";
   static const String login = 'api/v1/users/auth/login';
   static const String register = 'api/v1/users/auth/signup';
   static const String forgotPassword =
