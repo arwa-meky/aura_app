@@ -25,6 +25,7 @@ void main() async {
   await Hive.openBox<EventModel>('events_box');
   Hive.registerAdapter(HistoryItemAdapter());
   await Hive.openBox<HistoryItem>('health_history');
+  await Hive.openBox('profile_box');
   DioFactory.init();
   DioFactory.onSessionExpired = () {
     navigatorKey.currentState?.pushNamedAndRemoveUntil(

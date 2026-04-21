@@ -34,4 +34,16 @@ class UserModel {
       phoneNumber: userData['mobilePhone'],
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'fullNme': fullName,
+      'email': email,
+      'gender': gender,
+      'age': age,
+      'weight': weight,
+      'height': height,
+      'photoUrl': photoUrl,
+      'phoneNumber': phoneNumber,
+    };
+  }
 }

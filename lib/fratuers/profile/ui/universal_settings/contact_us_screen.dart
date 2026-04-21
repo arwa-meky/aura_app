@@ -56,7 +56,7 @@ class ContactUsScreen extends StatelessWidget {
 
               child: Text(
                 'support@aurahealth.dev',
-                styple: TextStyle(color: Color(0xff616161)),
+                style: TextStyle(color: Color(0xff616161)),
               ),
             ),
             const SizedBox(height: 20),

@@ -49,3 +49,5 @@ class ProfileLogOutError extends ProfileState {
   final String error;
   ProfileLogOutError(this.error);
 }
+
+class ProfileUpdateInitial extends ProfileState {}

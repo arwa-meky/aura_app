@@ -38,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
     String lastSyncTime = LocalStorage.getLastSyncTime() ?? "Unknown";
     String timeAgo = _getTimeAgo(lastSyncTime);
 
-    // التحقق من حالة الاتصال
     bool isConnected =
         cubit.isDeviceConnected ||
         state is BluetoothConnected ||
@@ -49,9 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int hr = isConnected ? (lastData?.heartRate ?? 0) : 0;
     int spo2 = isConnected ? (lastData?.oxygen ?? 0) : 0;
     int speed = isConnected ? (lastData?.speed ?? 0) : 0;
-    Object steps = isConnected
-        ? (lastData?.steps ?? 0)
-        : (cubit.getLastSteps());
+    Object steps = isConnected ? (lastData?.steps ?? 0) : cubit.cachedSteps;
     int deviceStatus = isConnected ? (lastData?.position ?? 0) : 0;
     int batteryLevel = isConnected ? (lastData?.battery ?? 0) : 0;
 
@@ -389,7 +386,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- Vitals Grid ---
   Widget _buildVitalsGrid(
     bool isConnected,
     int hr,
@@ -404,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: _buildVitalCard(
                 isConnected
-                    ? 'assets/images/watch_icon/blood.png'
+                    ? 'assets/images/watch_icon/heart.png'
                     : 'assets/images/home/heart_notActive.png',
                 "Heart Rate",
                 isConnected ? "$hr" : "--",
@@ -717,13 +713,25 @@ class _HomeScreenState extends State<HomeScreen> {
               )
             : Stack(
                 children: [
-                  Image.asset(
-                    "assets/images/map_placeholder.png",
-                    fit: BoxFit.cover,
-                    width: double.infinity,
+                  Positioned(
+                    bottom: 10,
+                    left: 10,
+                    child: Container(
+                      height: 30,
+                      width: 220,
+
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "Connect watch to see location",
+                          style: TextStyle(fontSize: 11),
+                        ),
+                      ),
+                    ),
                   ),
-                  Container(color: Colors.white.withOpacity(0.5)),
-                  const Center(child: Text("Connect watch to see location")),
                 ],
               ),
       ),

@@ -34,4 +34,18 @@ class HiveStorageService {
     await box.clear();
     print("🧹 Local storage cleared after sync");
   }
+
+  static const String _profileBox = 'profile_box';
+
+  static Future<void> saveProfile(Map<String, dynamic> data) async {
+    var box = Hive.box(_profileBox);
+    await box.put('user_cached_data', data);
+  }
+
+  static Map<String, dynamic>? getCachedProfile() {
+    var box = Hive.box(_profileBox);
+    final user = box.get('user_cached_data');
+    if (user == null) return null;
+    return Map<String, dynamic>.from(user);
+  }
 }

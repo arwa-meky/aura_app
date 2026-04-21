@@ -30,12 +30,14 @@ class CompleteProfileCubit extends Cubit<CompleteProfileState> {
       final int age = int.parse(ageController.text);
       final int weight = int.parse(weightController.text);
       final int hight = int.parse(hightController.text);
+      final String dateOfBirth = dobController.text.trim();
 
       await _apiService.completeProfile(
         gender: selectedGender,
         age: age,
         weight: weight,
         hight: hight,
+        dateOfBirth: dateOfBirth,
       );
 
       emit(CompleteProfileSuccess());
@@ -59,6 +61,7 @@ class CompleteProfileCubit extends Cubit<CompleteProfileState> {
     ageController.dispose();
     weightController.dispose();
     hightController.dispose();
+    dobController.dispose();
     return super.close();
   }
 }

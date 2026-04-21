@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:aura_project/core/helpers/storage/hive_storage_service.dart';
 import 'package:aura_project/core/helpers/storage/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +10,9 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:aura_project/fratuers/profile/model/user_data_model.dart';
 import 'package:aura_project/core/networking/auth_api_service.dart';
 import 'profile_state.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:dio/dio.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit() : super(ProfileInitial());
@@ -55,6 +59,7 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   void changeGender(String gender) {
     selectedGender = gender;
+    emit(ProfileUpdateInitial());
     if (currentUser != null) emit(ProfileLoaded(currentUser!));
   }
 
@@ -64,11 +69,10 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   void updateBirthDate(DateTime pickedDate) {
     dobController.text =
-        "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
-
+        "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
     _calculateAgeFromDate(pickedDate);
 
-    if (currentUser != null) emit(ProfileLoaded(currentUser!));
+    emit(ProfileUpdateInitial());
   }
 
   void _calculateAgeFromDate(DateTime date) {
@@ -120,18 +124,59 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
+  // Future<void> getUserData() async {
+  //   emit(ProfileLoading());
+  //   try {
+  //     final response = await _apiService.getPatientProfile();
+  //     if (response.statusCode == 200) {
+  //       currentUser = UserModel.fromJson(response.data);
+  //       emit(ProfileLoaded(currentUser!));
+  //     } else {
+  //       emit(ProfileError("Failed to fetch data: ${response.statusMessage}"));
+  //     }
+  //   } catch (e) {
+  //     emit(ProfileError("Failed to load profile: ${e.toString()}"));
+  //   }
+  // }
   Future<void> getUserData() async {
-    emit(ProfileLoading());
+    final cachedData = HiveStorageService.getCachedProfile();
+    if (cachedData != null) {
+      currentUser = UserModel.fromJson(cachedData);
+      emit(ProfileLoaded(currentUser!));
+      print("✅ Profile loaded from Cache");
+    } else {
+      emit(ProfileLoading());
+    }
+
     try {
       final response = await _apiService.getPatientProfile();
       if (response.statusCode == 200) {
+        await HiveStorageService.saveProfile(response.data);
+
         currentUser = UserModel.fromJson(response.data);
         emit(ProfileLoaded(currentUser!));
-      } else {
-        emit(ProfileError("Failed to fetch data: ${response.statusMessage}"));
+        print("🌐 Profile updated from Network");
       }
     } catch (e) {
-      emit(ProfileError("Failed to load profile: ${e.toString()}"));
+      if (currentUser == null) {
+        emit(ProfileError("Failed to load profile: ${e.toString()}"));
+      }
+    }
+  }
+
+  Future<void> saveProfileImageLocally(String imageUrl) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/user_profile_image.jpg';
+
+      await Dio().download(imageUrl, filePath);
+
+      var box = Hive.box('userBox');
+      await box.put('localImagePath', filePath);
+
+      print("Image saved at: $filePath");
+    } catch (e) {
+      print("Error saving image: $e");
     }
   }
 
@@ -152,6 +197,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         "height": heightController.text,
         "age": _calculatedAge,
         "gender": selectedGender,
+        "dateOfBirth": dobController.text.trim(),
       };
 
       final dataResponse = await _apiService.updateProfileData(dataMap);
@@ -168,7 +214,7 @@ class ProfileCubit extends Cubit<ProfileState> {
             print("⚠️ Data updated, but Image upload failed");
           }
         }
-
+        await HiveStorageService.saveProfile(dataResponse.data);
         emit(ProfileInfoUpdateSuccess());
         await getUserData();
       }

@@ -505,10 +505,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildGenderOption(String label, ProfileCubit cubit) {
-    bool isSelected = cubit.selectedGender == label.replaceAll("\n", " ");
+    String genderValue = label.replaceAll("\n", " ");
+    bool isSelected = cubit.selectedGender == genderValue;
     return Expanded(
       child: GestureDetector(
-        onTap: null,
+        onTap: () {
+          setState(() {
+            cubit.changeGender(genderValue);
+          });
+        },
         child: Container(
           padding: EdgeInsets.all(4),
           height: 60,

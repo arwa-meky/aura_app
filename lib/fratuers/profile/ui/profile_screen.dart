@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:aura_project/core/router/routes.dart';
 import 'package:aura_project/fratuers/profile/logic/profile_cubit.dart';
 import 'package:aura_project/fratuers/profile/logic/profile_state.dart';
@@ -5,6 +6,7 @@ import 'package:aura_project/fratuers/profile/ui/universal_settings_screen.dart'
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -29,7 +31,11 @@ class ProfileScreen extends StatelessWidget {
 
       builder: (context, state) {
         var cubit = ProfileCubit.get(context);
-        var user = cubit.currentUser;
+        final user = cubit.currentUser;
+        if (user == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        String? localPath = Hive.box('profile_box').get('localImagePath');
 
         return Scaffold(
           backgroundColor: const Color(0xffF5F8FF),
@@ -46,8 +52,10 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
           ),
-          body: user == null
+          body: (state is ProfileLoading)
               ? const Center(child: CircularProgressIndicator())
+              : (state is ProfileError)
+              ? Center(child: Text(state.error))
               : SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -63,15 +71,16 @@ class ProfileScreen extends StatelessWidget {
                             CircleAvatar(
                               radius: 80,
                               backgroundColor: Colors.grey.shade300,
-                              backgroundImage: cubit.profileImage != null
-                                  ? FileImage(cubit.profileImage!)
-                                        as ImageProvider
+                              backgroundImage:
+                                  (localPath != null &&
+                                      File(localPath).existsSync())
+                                  ? FileImage(File(localPath)) as ImageProvider
                                   : (user.photoUrl != null &&
                                         user.photoUrl!.isNotEmpty)
                                   ? CachedNetworkImageProvider(user.photoUrl!)
                                   : null,
                               child:
-                                  (cubit.profileImage == null &&
+                                  (localPath == null &&
                                       (user.photoUrl == null ||
                                           user.photoUrl!.isEmpty))
                                   ? const Icon(

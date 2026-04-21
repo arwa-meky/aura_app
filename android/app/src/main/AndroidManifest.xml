@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />  
     <uses-permission android:name="android.permission.WAKE_LOCK" /> 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     
     <uses-permission android:name="android.permission.SEND_SMS"/> 
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
@@ -71,11 +73,12 @@
         </activity>
 
         <service
-            android:name="id.flutter.flutter_background_service.BackgroundService"
-            android:foregroundServiceType="connectedDevice|dataSync" 
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="connectedDevice|location"
             android:permission="android.permission.FOREGROUND_SERVICE"
-            android:exported="true" 
+            android:exported="false" 
             android:enabled="true"
+            android:stopWithTask="false"
         />
         
         <receiver android:enabled="true" android:exported="true" android:name="id.flutter.flutter_background_service.BootBroadcastReceiver"> 

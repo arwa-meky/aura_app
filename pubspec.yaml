@@ -61,7 +61,7 @@ dependencies:
   cookie_jar: ^4.0.0          
   geocoding: ^4.0.0
   fl_chart: ^0.66.0  
-  cached_network_image: ^3.4.1 # تأكدي من استخدام أحدث إصدار
+  cached_network_image: ^3.4.1
   google_maps_flutter: ^2.5.3
 
 

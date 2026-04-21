@@ -72,7 +72,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     if (picked != null) {
       final age = DateTime.now().year - picked.year;
       cubit.ageController.text = age.toString();
-      cubit.dobController.text = "${picked.day}/${picked.month}/${picked.year}";
+      String year = picked.year.toString();
+      String month = picked.month.toString().padLeft(2, '0');
+      String day = picked.day.toString().padLeft(2, '0');
+
+      cubit.dobController.text = "$year-$month-$day";
       setState(() {});
     }
   }

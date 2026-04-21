@@ -36,23 +36,30 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   BluetoothDevice? connectedDevice;
   List<ScanResult> _scanResults = [];
   Timer? _simulationTimer; //for demo
+  int cachedSteps = 0;
 
   Future<void> _initForegroundTask() async {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'aura_monitoring',
         channelName: 'AURA Monitoring',
-        channelImportance: NotificationChannelImportance.HIGH,
-        priority: NotificationPriority.HIGH,
+        channelImportance: NotificationChannelImportance.MAX,
+        priority: NotificationPriority.MAX,
+        showWhen: true,
+        enableVibration: true,
+        playSound: true,
+        showBadge: false,
+        visibility: NotificationVisibility.VISIBILITY_PUBLIC,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
-        playSound: false,
+        playSound: true,
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         eventAction: ForegroundTaskEventAction.repeat(5000),
         autoRunOnBoot: true,
         allowWakeLock: true,
+        allowWifiLock: true,
       ),
     );
   }
@@ -63,7 +70,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     await Future.delayed(const Duration(seconds: 2));
     //for demo
     isDeviceConnected = true;
-    const String demoDeviceId = "DEMO_DEVICE_AURA_001";
+    const String demoDeviceId = "6789abcdef0123456789zxcv";
 
     emit(BluetoothConnected("Aura Demo Watch"));
 
@@ -71,7 +78,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
     final String? token = LocalStorage.token;
     if (token != null) SocketService.init(token);
-    _simulationTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _simulationTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _generateFakeData();
     });
     await _initForegroundTask();
@@ -105,13 +112,17 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       position: 0,
       sos: isSOS ? 1 : 0,
       shake: isFallDetected ? 1 : 0,
-      battery: 0,
+      battery: 60,
     );
     lastReadings = data;
+    emit(BluetoothDataReceived(data));
 
+    // 2. الاختبار الحقيقي للـ Background Service:
+    // نبعت البيانات للـ Task Isolate
+    FlutterForegroundTask.sendDataToTask(data.toBackendJson());
     await HiveStorageService.saveReading(data);
 
-    SocketService.sendHealthData(data.toBackendJson());
+    // SocketService.sendHealthData(data.toBackendJson());
     if (data.lat != 0) updateLocationAddress(data.lat, data.lon);
 
     if (isSOS) {
@@ -374,9 +385,12 @@ class BluetoothCubit extends Cubit<BluetoothState> {
         currentUserId,
       );
       lastReadings = data;
+      emit(BluetoothDataReceived(data));
+
+      FlutterForegroundTask.sendDataToTask(data.toBackendJson());
       await HiveStorageService.saveReading(data);
 
-      SocketService.sendHealthData(data.toBackendJson());
+      // SocketService.sendHealthData(data.toBackendJson());
 
       if (data.lat != 0 && data.lon != 0) {
         _updateAddressBackground(data.lat, data.lon);
@@ -505,7 +519,9 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
   Future<int> getLastSteps() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('last_steps') ?? 0;
+    int steps = prefs.getInt('last_steps') ?? 0;
+    cachedSteps = steps;
+    return steps;
   }
 
   void stopEverything() {
