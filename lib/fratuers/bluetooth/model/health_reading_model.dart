@@ -124,7 +124,44 @@ class HealthReadingModel extends HiveObject {
     );
   }
 
+<<<<<<< HEAD
   Map<String, dynamic> toBackendJson() {
+=======
+  // Map<String, dynamic> toBackendJson() {
+  //   return {
+  //     "user_id": userId,
+  //     "timestamp": timestamp,
+  //     "data": {
+  //       "heartRate": heartRate,
+  //       "spO2": oxygen,
+  //       "speed": speed,
+  //       "steps": steps,
+  //       "gps": {"lat": lat, "lon": lon},
+  //       "Sitting or Standing": position,
+  //       "SOS": sos,
+  //       "Shake": shake,
+  //       "battery": battery,
+  //     },
+  //   };
+  // }
+  Map<String, dynamic> toBackendJson({
+    double weight = 0,
+    double height = 0,
+    int age = 0,
+    int gender = 0,
+  }) {
+    DateTime dt = DateTime.tryParse(timestamp) ?? DateTime.now();
+    double heightInMeters = height / 100;
+    double bmi = (heightInMeters > 0)
+        ? weight / (heightInMeters * heightInMeters)
+        : 0.0;
+    double strideLength = (gender == 0) ? height * 0.415 : height * 0.413;
+    double distanceInMeters = (steps * strideLength) / 100;
+    double distanceKm = distanceInMeters / 1000;
+    double caloriesBurned = steps * (weight * 0.0005);
+    double calculatedHrv = 40.0 + (heartRate % 10);
+
+>>>>>>> 677dc3a (update base URL and enable health data sending in BluetoothCubit)
     return {
       "user_id": userId,
       "timestamp": timestamp,

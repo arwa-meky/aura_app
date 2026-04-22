@@ -376,7 +376,15 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       lastReadings = data;
       await HiveStorageService.saveReading(data);
 
+<<<<<<< HEAD
       SocketService.sendHealthData(data.toBackendJson());
+=======
+      // FlutterForegroundTask.sendDataToTask(data.toBackendJson());
+      if (SocketService.isConnected) {
+        SocketService.sendHealthData(data.toBackendJson());
+      }
+      HiveStorageService.saveReading(data);
+>>>>>>> 677dc3a (update base URL and enable health data sending in BluetoothCubit)
 
       if (data.lat != 0 && data.lon != 0) {
         _updateAddressBackground(data.lat, data.lon);
