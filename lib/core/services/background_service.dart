@@ -46,23 +46,19 @@ class AuraBackgroundHandler extends TaskHandler {
   }
 
   void _generateAndSendFakeData() {
-    // 1. جلب بيانات البروفايل من Hive داخل الـ Background
     final fullResponse = HiveStorageService.getCachedProfile();
     final cachedData = fullResponse?['data'] as Map<dynamic, dynamic>?;
 
-    // دلوقت نسحب القيم واحنا مطمنين
     double weight =
         double.tryParse(cachedData?['weight']?.toString() ?? "0") ?? 0.0;
     double height =
         double.tryParse(cachedData?['height']?.toString() ?? "0") ?? 0.0;
     int age = int.tryParse(cachedData?['age']?.toString() ?? "0") ?? 0;
 
-    // معالجة النوع (Gender)
     String genderStr =
         cachedData?['gender']?.toString().toLowerCase() ?? "male";
     int gender = (genderStr == "male") ? 0 : 1;
 
-    // 2. توليد البيانات العشوائية (زي ما هي)
     final int hr = 72 + _random.nextInt(20);
     final int o2 = 96 + _random.nextInt(4);
 
@@ -97,7 +93,6 @@ class AuraBackgroundHandler extends TaskHandler {
       },
     };
 
-    // 3. تحويل لشكل السيرفر (المحسوب)
     final backendMap = data.toBackendJson(
       weight: weight,
       height: height,
@@ -105,13 +100,12 @@ class AuraBackgroundHandler extends TaskHandler {
       gender: gender,
     );
 
-    _lastGeneratedData = uiMap; // نخزن نسخة الـ UI
+    _lastGeneratedData = uiMap;
 
-    // 4. الإرسال
-    FlutterForegroundTask.sendDataToMain(uiMap); // يروح للـ Cubit
+    FlutterForegroundTask.sendDataToMain(uiMap);
 
     if (SocketService.isConnected) {
-      SocketService.sendHealthData(backendMap); // يروح للسيرفر
+      SocketService.sendHealthData(backendMap);
     }
   }
 
@@ -124,11 +118,10 @@ class AuraBackgroundHandler extends TaskHandler {
 
   @override
   void onReceiveData(Object data) async {
-    print("📩 Background received signal: $data"); // مهم جداً لمراقبة الـ Log
+    print("📩 Background received signal: $data");
 
     if (data == 'GET_CURRENT_DATA') {
       if (_lastGeneratedData != null) {
-        // إرسال النسخة "المخزنة" فوراً للـ UI
         FlutterForegroundTask.sendDataToMain(_lastGeneratedData!);
       }
     }

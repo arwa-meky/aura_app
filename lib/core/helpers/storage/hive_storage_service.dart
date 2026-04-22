@@ -43,10 +43,7 @@ class HiveStorageService {
   }
 
   static Map<String, dynamic>? getCachedProfile() {
-    // التأكد من أن الـ Box مفتوح، وإذا لم يكن، نفتحه أولاً
     if (!Hive.isBoxOpen(_profileBox)) {
-      // ملحوظة: بما أن هذه الدالة ليست async، سنستخدم Hive.box()
-      // ولكن يجب أن نكون قد فتحناه في الـ onStart الخاص بالـ Background
       print(
         "⚠️ Box was not open, make sure Hive.openBox was called in onStart",
       );

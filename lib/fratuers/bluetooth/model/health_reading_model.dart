@@ -190,7 +190,6 @@ class HealthReadingModel extends HiveObject {
     return HealthReadingModel(
       userId: json['user_id'] ?? "",
       timestamp: json['timestamp'] ?? "",
-      // تأكدي من تطابق الحروف الكبيرة والصغيرة مع الـ Log
       heartRate: (dataMap['heartRate'] ?? 0).toInt(),
       oxygen: (dataMap['spO2'] ?? 0).toInt(),
       speed: (dataMap['speed'] ?? 0).toInt(),
@@ -200,7 +199,7 @@ class HealthReadingModel extends HiveObject {
       position: (dataMap['Sitting or Standing'] ?? 0).toInt(),
       sos: (dataMap['SOS'] ?? 0).toInt(),
       shake: (dataMap['Shake'] ?? 0).toInt(),
-      battery: (dataMap['battery'] ?? 0).toInt(), // ✅ كدة البطارية هتقرأ صح
+      battery: (dataMap['battery'] ?? 0).toInt(),
       isSynced: true,
     );
   }

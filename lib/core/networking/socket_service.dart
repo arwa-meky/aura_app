@@ -66,23 +66,21 @@ class SocketService {
         await HiveStorageService.getAllUnsyncedReadings();
     if (offlineData.isEmpty) return;
 
-    // 1. جلب بيانات البروفايل من الـ Hive قبل البدء
-    final cachedData =
-        HiveStorageService.getCachedProfile(); // تأكدي من عمل import للـ LocalStorage
+    final fullResponse = HiveStorageService.getCachedProfile();
+    final cachedData = fullResponse?['data'] as Map<dynamic, dynamic>?;
 
-    // 2. استخراج القيم أو وضع قيم افتراضية
     double weight =
         double.tryParse(cachedData?['weight']?.toString() ?? "0") ?? 0.0;
     double height =
         double.tryParse(cachedData?['height']?.toString() ?? "0") ?? 0.0;
     int age = int.tryParse(cachedData?['age']?.toString() ?? "0") ?? 0;
-    int gender = (cachedData?['gender']?.toString().toLowerCase() == "male")
-        ? 0
-        : 1;
+
+    String genderStr =
+        cachedData?['gender']?.toString().toLowerCase() ?? "male";
+    int gender = (genderStr == "male") ? 0 : 1;
 
     print("🔄 Syncing ${offlineData.length} offline readings...");
 
-    // 3. تمرير المتغيرات لدالة toBackendJson أثناء الـ Mapping
     List<Map<String, dynamic>> batchData = offlineData
         .map(
           (e) => e.toBackendJson(
@@ -94,7 +92,6 @@ class SocketService {
         )
         .toList();
 
-    // 4. الإرسال (زي ما هو في كودك)
     socket.emitWithAck(
       'chat message',
       batchData,

@@ -89,28 +89,19 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   }
 
   void sendDataToApi(HealthReadingModel healthModel) {
-    // 1. جلب بيانات البروفايل من Hive
     final fullResponse = HiveStorageService.getCachedProfile();
     final cachedData = fullResponse?['data'] as Map<dynamic, dynamic>?;
 
-    // دلوقت نسحب القيم واحنا مطمنين
     double weight =
         double.tryParse(cachedData?['weight']?.toString() ?? "0") ?? 0.0;
     double height =
         double.tryParse(cachedData?['height']?.toString() ?? "0") ?? 0.0;
     int age = int.tryParse(cachedData?['age']?.toString() ?? "0") ?? 0;
 
-    // معالجة النوع (Gender)
     String genderStr =
         cachedData?['gender']?.toString().toLowerCase() ?? "male";
     int gender = (genderStr == "male") ? 0 : 1;
 
-    // 2. تحويلها لـ UserModel (أو التعامل مع الـ Map مباشرة)
-
-    // 3. استخراج القيم مع وضع قيم افتراضية لو البروفايل فاضي
-
-    // 4. تحويل الداتا الصحية للشكل المطلوب للباك إند
-    // هنمرر البيانات دي لدالة الـ toBackendJson اللي عدلناها قبل كدة
     final finalJson = healthModel.toBackendJson(
       weight: weight,
       height: height,
@@ -118,16 +109,12 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       gender: gender,
     );
 
-    // 5. الإرسال
-    // 5. الإرسال باستخدام الدالة المعرفة في الكلاس بتاعك
     SocketService.sendHealthData(finalJson);
   }
 
-  // جوه BluetoothCubit
   Future<void> checkServiceAndListen() async {
     bool running = await FlutterForegroundTask.isRunningService;
     if (running) {
-      // مهم جداً: الـ emit ده هو اللي هيخلي watch تخلي الـ UI يتحدث
       emit(BluetoothConnected("Aura Watch"));
       listenToBackgroundService();
       FlutterForegroundTask.sendDataToTask('GET_CURRENT_DATA');
@@ -195,16 +182,13 @@ class BluetoothCubit extends Cubit<BluetoothState> {
         print("📥 Raw Data from Background: $data");
 
         try {
-          // ✅ استخدمي fromJson لأن الداتا جاية فيها مفتاح "data" داخلي
           lastReadings = HealthReadingModel.fromProcessedJson(data);
 
           emit(BluetoothDataReceived(lastReadings!));
 
-          // التأكد من القيمة بعد التحويل
           print("✅ UI Updated with HR: ${lastReadings!.heartRate}");
         } catch (e) {
           print("❌ Parsing Error: $e");
-          // لو ضرب error هنا، معناه إن فيه مفتاح ناقص في الـ Map (زي الـ gps مثلاً)
         }
       }
     });
