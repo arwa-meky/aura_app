@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     context.read<ProfileCubit>().getUserData();
+    context.read<BluetoothCubit>().checkServiceAndListen();
     final savedDeviceId = LocalStorage.getDeviceId;
     if (savedDeviceId != null) {
       context.read<BluetoothCubit>().getDeviceStreak(savedDeviceId);
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     bool isConnected =
         cubit.isDeviceConnected ||
+        cubit.lastReadings != null ||
         state is BluetoothConnected ||
         state is BluetoothDataReceived;
 

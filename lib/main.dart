@@ -13,10 +13,12 @@ import 'package:aura_project/fratuers/trends/model/history_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:hive_flutter/adapters.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterForegroundTask.initCommunicationPort();
   await LocalStorage.init();
   await Hive.initFlutter();
   Hive.registerAdapter(HealthReadingModelAdapter());
@@ -43,7 +45,11 @@ void main() async {
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => BluetoothCubit()),
+        BlocProvider(
+          create: (context) =>
+              BluetoothCubit(LocalStorage.getUserId ?? "guest_user")
+                ..listenToBackgroundService(),
+        ),
         BlocProvider(create: (context) => ProfileCubit()..initProfile()),
       ],
       child: const AuraApp(),

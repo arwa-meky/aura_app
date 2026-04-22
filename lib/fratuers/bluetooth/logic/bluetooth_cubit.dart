@@ -11,18 +11,23 @@ import 'package:aura_project/core/networking/socket_service.dart';
 import 'package:aura_project/core/services/background_service.dart';
 import 'package:aura_project/fratuers/bluetooth/logic/bluetooth_state.dart';
 import 'package:aura_project/fratuers/bluetooth/model/health_reading_model.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart' hide BluetoothState;
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:aura_project/core/services/notification_service.dart';
-import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart'; //for demo
 
 class BluetoothCubit extends Cubit<BluetoothState> {
-  BluetoothCubit() : super(BluetoothInitial());
+  final String userId;
+  BluetoothCubit(this.userId) : super(BluetoothInitial()) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkServiceAndListen();
+    });
+  }
 
   final AuthApiService _apiService = AuthApiService();
   int currentStreak = 0;
@@ -67,85 +72,142 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
   void startSimulation() async {
     emit(BluetoothConnecting());
+    await Future.delayed(const Duration(seconds: 1));
 
-    await Future.delayed(const Duration(seconds: 2));
-    //for demo
-    isDeviceConnected = true;
-    const String demoDeviceId = "6789abcdef0123456789zxcv";
+    await LocalStorage.setIsDemoMode(true);
 
     emit(BluetoothConnected("Aura Demo Watch"));
 
-    await getDeviceStreak(demoDeviceId);
-
-    final String? token = LocalStorage.token;
-    if (token != null) SocketService.init(token);
-    await Future.delayed(const Duration(seconds: 2));
-    _simulationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      _generateFakeData();
-    });
     await _initForegroundTask();
     await FlutterForegroundTask.startService(
       notificationTitle: 'AURA: وضع المحاكاة نشط',
-      notificationText: 'جاري محاكاة البيانات...',
+      notificationText: 'جاري محاكاة البيانات في الخلفية...',
       callback: startCallback,
     );
+
+    _simulationTimer?.cancel();
   }
 
-  void _generateFakeData() async {
-    //for demo
-    final random = Random();
+  void sendDataToApi(HealthReadingModel healthModel) {
+    // 1. جلب بيانات البروفايل من Hive
+    final fullResponse = HiveStorageService.getCachedProfile();
+    final cachedData = fullResponse?['data'] as Map<dynamic, dynamic>?;
 
-    final int hr = 70 + random.nextInt(30);
-    final int o2 = 95 + random.nextInt(5);
-    final int speed = random.nextInt(10) * 10;
+    // دلوقت نسحب القيم واحنا مطمنين
+    double weight =
+        double.tryParse(cachedData?['weight']?.toString() ?? "0") ?? 0.0;
+    double height =
+        double.tryParse(cachedData?['height']?.toString() ?? "0") ?? 0.0;
+    int age = int.tryParse(cachedData?['age']?.toString() ?? "0") ?? 0;
 
-    final bool isSOS = random.nextInt(100) > 98;
-    final bool isFallDetected = random.nextInt(100) > 98;
+    // معالجة النوع (Gender)
+    String genderStr =
+        cachedData?['gender']?.toString().toLowerCase() ?? "male";
+    int gender = (genderStr == "male") ? 0 : 1;
 
-    final data = HealthReadingModel(
-      userId: LocalStorage.getUserId ?? "demo_user",
-      timestamp: DateTime.now().toIso8601String(),
-      heartRate: hr,
-      oxygen: o2,
-      speed: speed,
-      steps: 1500 + random.nextInt(100),
-      lat: 30.0,
-      lon: 31.0,
-      position: 0,
-      sos: isSOS ? 1 : 0,
-      shake: isFallDetected ? 1 : 0,
-      battery: 60,
+    // 2. تحويلها لـ UserModel (أو التعامل مع الـ Map مباشرة)
+
+    // 3. استخراج القيم مع وضع قيم افتراضية لو البروفايل فاضي
+
+    // 4. تحويل الداتا الصحية للشكل المطلوب للباك إند
+    // هنمرر البيانات دي لدالة الـ toBackendJson اللي عدلناها قبل كدة
+    final finalJson = healthModel.toBackendJson(
+      weight: weight,
+      height: height,
+      age: age,
+      gender: gender,
     );
-    lastReadings = data;
-    emit(BluetoothDataReceived(data));
 
-    FlutterForegroundTask.sendDataToTask(data.toBackendJson());
+    // 5. الإرسال
+    // 5. الإرسال باستخدام الدالة المعرفة في الكلاس بتاعك
+    SocketService.sendHealthData(finalJson);
+  }
 
-    // if (SocketService.isConnected) {
-    //   SocketService.sendHealthData(data.toBackendJson());
-    // }
-    HiveStorageService.saveReading(data);
-
-    if (data.lat != 0) updateLocationAddress(data.lat, data.lon);
-
-    if (isSOS) {
-      NotificationService().startEmergencyCountdown(
-        title: "SOS Alert",
-        lat: data.lat.toString(),
-        lon: data.lon.toString(),
-      );
-
-      emit(BluetoothEmergencyState("🚨 SOS Simulated Alert!"));
-    } else if (isFallDetected) {
-      NotificationService().startEmergencyCountdown(
-        title: "Shake Alert!",
-        lat: data.lat.toString(),
-        lon: data.lon.toString(),
-      );
-      emit(BluetoothEmergencyState("🚨 Shake Simulated Alert!"));
-    } else {
-      emit(BluetoothDataReceived(data));
+  // جوه BluetoothCubit
+  Future<void> checkServiceAndListen() async {
+    bool running = await FlutterForegroundTask.isRunningService;
+    if (running) {
+      // مهم جداً: الـ emit ده هو اللي هيخلي watch تخلي الـ UI يتحدث
+      emit(BluetoothConnected("Aura Watch"));
+      listenToBackgroundService();
+      FlutterForegroundTask.sendDataToTask('GET_CURRENT_DATA');
     }
+  }
+  // void _generateFakeData() async {
+  //   //for demo
+  //   final random = Random();
+
+  //   final int hr = 70 + random.nextInt(30);
+  //   final int o2 = 95 + random.nextInt(5);
+  //   final int speed = random.nextInt(10) * 10;
+
+  //   final bool isSOS = random.nextInt(100) > 98;
+  //   final bool isFallDetected = random.nextInt(100) > 98;
+
+  //   final data = HealthReadingModel(
+  //     userId: LocalStorage.getUserId ?? "demo_user",
+  //     timestamp: DateTime.now().toIso8601String(),
+  //     heartRate: hr,
+  //     oxygen: o2,
+  //     speed: speed,
+  //     steps: 1500 + random.nextInt(100),
+  //     lat: 30.0,
+  //     lon: 31.0,
+  //     position: 0,
+  //     sos: isSOS ? 1 : 0,
+  //     shake: isFallDetected ? 1 : 0,
+  //     battery: 60,
+  //   );
+  //   lastReadings = data;
+  //   emit(BluetoothDataReceived(data));
+
+  //   FlutterForegroundTask.sendDataToTask(data.toBackendJson());
+
+  //   // if (SocketService.isConnected) {
+  //   //   SocketService.sendHealthData(data.toBackendJson());
+  //   // }
+  //   HiveStorageService.saveReading(data);
+
+  //   if (data.lat != 0) updateLocationAddress(data.lat, data.lon);
+
+  //   if (isSOS) {
+  //     NotificationService().startEmergencyCountdown(
+  //       title: "SOS Alert",
+  //       lat: data.lat.toString(),
+  //       lon: data.lon.toString(),
+  //     );
+
+  //     emit(BluetoothEmergencyState("🚨 SOS Simulated Alert!"));
+  //   } else if (isFallDetected) {
+  //     NotificationService().startEmergencyCountdown(
+  //       title: "Shake Alert!",
+  //       lat: data.lat.toString(),
+  //       lon: data.lon.toString(),
+  //     );
+  //     emit(BluetoothEmergencyState("🚨 Shake Simulated Alert!"));
+  //   } else {
+  //     emit(BluetoothDataReceived(data));
+  //   }
+  // }
+  void listenToBackgroundService() {
+    FlutterForegroundTask.addTaskDataCallback((data) {
+      if (data is Map<String, dynamic>) {
+        print("📥 Raw Data from Background: $data");
+
+        try {
+          // ✅ استخدمي fromJson لأن الداتا جاية فيها مفتاح "data" داخلي
+          lastReadings = HealthReadingModel.fromProcessedJson(data);
+
+          emit(BluetoothDataReceived(lastReadings!));
+
+          // التأكد من القيمة بعد التحويل
+          print("✅ UI Updated with HR: ${lastReadings!.heartRate}");
+        } catch (e) {
+          print("❌ Parsing Error: $e");
+          // لو ضرب error هنا، معناه إن فيه مفتاح ناقص في الـ Map (زي الـ gps مثلاً)
+        }
+      }
+    });
   }
 
   void startScan() async {
@@ -391,7 +453,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       lastReadings = data;
       emit(BluetoothDataReceived(data));
 
-      FlutterForegroundTask.sendDataToTask(data.toBackendJson());
+      // FlutterForegroundTask.sendDataToTask(data.toBackendJson());
       // if (SocketService.isConnected) {
       //   SocketService.sendHealthData(data.toBackendJson());
       // }

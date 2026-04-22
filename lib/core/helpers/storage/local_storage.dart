@@ -83,4 +83,13 @@ class LocalStorage {
   static String? getLastSyncTime() {
     return sharedPreferences.getString('last_sync_time');
   }
+
+  static Future<void> setIsDemoMode(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_demo', value);
+  }
+
+  static bool getIsDemoMode() {
+    return sharedPreferences.getBool('is_demo') ?? false;
+  }
 }

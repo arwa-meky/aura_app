@@ -124,39 +124,84 @@ class HealthReadingModel extends HiveObject {
     );
   }
 
-  Map<String, dynamic> toBackendJson() {
+  // Map<String, dynamic> toBackendJson() {
+  //   return {
+  //     "user_id": userId,
+  //     "timestamp": timestamp,
+  //     "data": {
+  //       "heartRate": heartRate,
+  //       "spO2": oxygen,
+  //       "speed": speed,
+  //       "steps": steps,
+  //       "gps": {"lat": lat, "lon": lon},
+  //       "Sitting or Standing": position,
+  //       "SOS": sos,
+  //       "Shake": shake,
+  //       "battery": battery,
+  //     },
+  //   };
+  // }
+  Map<String, dynamic> toBackendJson({
+    required double weight,
+    required double height,
+    required int age,
+    required int gender,
+  }) {
+    DateTime dt = DateTime.tryParse(timestamp) ?? DateTime.now();
+    double heightInMeters = height / 100;
+    double bmi = (heightInMeters > 0)
+        ? weight / (heightInMeters * heightInMeters)
+        : 0.0;
+    double strideLength = (gender == 0) ? height * 0.415 : height * 0.413;
+    double distanceInMeters = (steps * strideLength) / 100;
+    double distanceKm = distanceInMeters / 1000;
+    double caloriesBurned = steps * (weight * 0.0005);
+    double calculatedHrv = 40.0 + (heartRate % 10);
+
     return {
-      "user_id": userId,
-      "timestamp": timestamp,
-      "data": {
-        "heartRate": heartRate,
-        "spO2": oxygen,
-        "speed": speed,
-        "steps": steps,
-        "gps": {"lat": lat, "lon": lon},
-        "Sitting or Standing": position,
-        "SOS": sos,
-        "Shake": shake,
-        "battery": battery,
-      },
+      "User_ID": userId,
+      "Age": age,
+      "Gender": gender,
+      "Height_cm": height,
+      "Weight_kg": weight,
+      "BMI": double.parse(bmi.toStringAsFixed(1)),
+      "Fitness_Level": (steps < 5000)
+          ? 1
+          : ((steps > 10000) ? 3 : 2), ///////////
+      "Timestamp": timestamp,
+      "Hour": dt.hour,
+      "Day_of_Week": dt.weekday,
+      "Heart_Rate": heartRate.toDouble(),
+      "SpO2": oxygen.toDouble(),
+      "HRV": double.parse(calculatedHrv.toStringAsFixed(1)), ////////
+      "Activity_Label": position, ////////////////
+      "Speed_kmh": speed.toDouble(),
+      "Steps_Interval": (steps * 0.02).toInt(), ////////
+      "Total_Steps": steps,
+      "Calories": caloriesBurned.toInt(), ////////
+      "Distance_km": double.parse(distanceKm.toStringAsFixed(2)), //////
     };
   }
 
-  // Map<String, dynamic> toMap() {
-  //   return {
-  //     'id': key,
-  //     'userId': userId,
-  //     'timestamp': timestamp,
-  //     'heartRate': heartRate,
-  //     'oxygen': oxygen,
-  //     'temperature': temperature,
-  //     'steps': steps,
-  //     'lat': lat,
-  //     'lon': lon,
-  //     'position': position,
-  //     'sos': sos,
-  //     'shake': shake,
-  //     'isSynced': isSynced ? 1 : 0,
-  //   };
-  // }
+  factory HealthReadingModel.fromProcessedJson(Map<String, dynamic> json) {
+    final dataMap = json['data'] as Map<String, dynamic>;
+    final gpsMap = dataMap['gps'] as Map<String, dynamic>;
+
+    return HealthReadingModel(
+      userId: json['user_id'] ?? "",
+      timestamp: json['timestamp'] ?? "",
+      // تأكدي من تطابق الحروف الكبيرة والصغيرة مع الـ Log
+      heartRate: (dataMap['heartRate'] ?? 0).toInt(),
+      oxygen: (dataMap['spO2'] ?? 0).toInt(),
+      speed: (dataMap['speed'] ?? 0).toInt(),
+      steps: (dataMap['steps'] ?? 0).toInt(),
+      lat: (gpsMap['lat'] ?? 0.0).toDouble(),
+      lon: (gpsMap['lon'] ?? 0.0).toDouble(),
+      position: (dataMap['Sitting or Standing'] ?? 0).toInt(),
+      sos: (dataMap['SOS'] ?? 0).toInt(),
+      shake: (dataMap['Shake'] ?? 0).toInt(),
+      battery: (dataMap['battery'] ?? 0).toInt(), // ✅ كدة البطارية هتقرأ صح
+      isSynced: true,
+    );
+  }
 }
