@@ -30,7 +30,7 @@ class SocketService {
       print('✅ Socket Connected!');
       isConnected = true;
 
-      _syncOfflineData();
+      Future.delayed(Duration(seconds: 3), () => _syncOfflineData());
     });
 
     socket.onDisconnect((_) {
@@ -52,7 +52,7 @@ class SocketService {
   }
 
   static void sendHealthData(Map<String, dynamic> data) {
-    if (isConnected) {
+    if (_initialized && isConnected) {
       // - Emit the data read from the smartwatch to the backend server
       socket.emit('chat message', data);
       print("📡 Data emitted via Socket");
@@ -62,22 +62,23 @@ class SocketService {
   }
 
   static void _syncOfflineData() async {
-    List<HealthReadingModel> offlineData =
-        await HiveStorageService.getAllUnsyncedReadings();
+  List<HealthReadingModel> offlineData = await HiveStorageService.getAllUnsyncedReadings();
 
-    if (offlineData.isEmpty) return;
+  if (offlineData.isEmpty) return;
 
-    print("🔄 Syncing ${offlineData.length} offline readings...");
+  print("🔄 Syncing ${offlineData.length} offline readings...");
 
-    for (var reading in offlineData) {
-      socket.emit('chat message', reading.toBackendJson());
+  List<Map<String, dynamic>> batchData = offlineData.map((e) => e.toBackendJson()).toList();
 
-      await Future.delayed(const Duration(milliseconds: 10));
-    }
-
+  socket.emitWithAck('chat message', batchData, ack: (data) async {
+    print("✅ Server acknowledged sync: $data");
+    
     await HiveStorageService.clearAllReadings();
-    print("✅ Sync Completed!");
-  }
+    print("🧹 Local storage cleared after successful sync");
+  });
+
+  print("📡 Sync process initiated...");
+}
 
   static void disconnect() {
     if (isConnected) {

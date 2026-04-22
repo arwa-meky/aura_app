@@ -279,7 +279,9 @@ class ProfileCubit extends Cubit<ProfileState> {
     notifyNewService = prefs.getBool('notify_service') ?? true;
     notifyTips = prefs.getBool('notify_tips') ?? false;
 
-    if (currentUser != null) emit(ProfileLoaded(currentUser!));
+    if (currentUser != null && !isClosed) {
+      emit(ProfileLoaded(currentUser!));
+    }
   }
 
   void changeNotificationSwitch(String type, bool value) async {

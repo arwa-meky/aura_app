@@ -35,7 +35,9 @@ class TrendsCubit extends Cubit<TrendsState> {
       emit(TrendsLoaded());
     } catch (e) {
       print("❌ Trends Error: $e");
-      emit(TrendsError(e.toString()));
+      if (!isClosed) {
+        emit(TrendsError(e.toString()));
+      }
     }
   }
 

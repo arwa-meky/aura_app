@@ -37,6 +37,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   List<ScanResult> _scanResults = [];
   Timer? _simulationTimer; //for demo
   int cachedSteps = 0;
+  DateTime? _lastAddressUpdate;
 
   Future<void> _initForegroundTask() async {
     FlutterForegroundTask.init(
@@ -78,13 +79,14 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
     final String? token = LocalStorage.token;
     if (token != null) SocketService.init(token);
-    _simulationTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    await Future.delayed(const Duration(seconds: 2));
+    _simulationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _generateFakeData();
     });
     await _initForegroundTask();
     await FlutterForegroundTask.startService(
       notificationTitle: 'AURA: وضع المحاكاة نشط',
-      notificationText: 'جاري محاولة محاكاة البيانات والـ Streak...',
+      notificationText: 'جاري محاكاة البيانات...',
       callback: startCallback,
     );
   }
@@ -117,12 +119,13 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     lastReadings = data;
     emit(BluetoothDataReceived(data));
 
-    // 2. الاختبار الحقيقي للـ Background Service:
-    // نبعت البيانات للـ Task Isolate
     FlutterForegroundTask.sendDataToTask(data.toBackendJson());
-    await HiveStorageService.saveReading(data);
 
-    // SocketService.sendHealthData(data.toBackendJson());
+    // if (SocketService.isConnected) {
+    //   SocketService.sendHealthData(data.toBackendJson());
+    // }
+    HiveStorageService.saveReading(data);
+
     if (data.lat != 0) updateLocationAddress(data.lat, data.lon);
 
     if (isSOS) {
@@ -209,6 +212,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
       connectedDevice = device;
       isDeviceConnected = true;
+      await Future.delayed(const Duration(seconds: 2));
       await _initForegroundTask();
       await FlutterForegroundTask.startService(
         notificationTitle: 'AURA: المراقبة نشطة',
@@ -388,9 +392,10 @@ class BluetoothCubit extends Cubit<BluetoothState> {
       emit(BluetoothDataReceived(data));
 
       FlutterForegroundTask.sendDataToTask(data.toBackendJson());
-      await HiveStorageService.saveReading(data);
-
-      // SocketService.sendHealthData(data.toBackendJson());
+      // if (SocketService.isConnected) {
+      //   SocketService.sendHealthData(data.toBackendJson());
+      // }
+      HiveStorageService.saveReading(data);
 
       if (data.lat != 0 && data.lon != 0) {
         _updateAddressBackground(data.lat, data.lon);
@@ -508,8 +513,12 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   }
 
   Future<void> updateLocationAddress(double lat, double long) async {
-    await _updateAddressBackground(lat, long);
-    emit(BluetoothLocationUpdated());
+    if (_lastAddressUpdate == null ||
+        DateTime.now().difference(_lastAddressUpdate!).inSeconds > 60) {
+      await _updateAddressBackground(lat, long);
+      _lastAddressUpdate = DateTime.now();
+      emit(BluetoothLocationUpdated());
+    }
   }
 
   Future<void> saveLastSteps(int steps) async {
