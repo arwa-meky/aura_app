@@ -24,9 +24,26 @@ import 'package:shared_preferences/shared_preferences.dart'; //for demo
 class BluetoothCubit extends Cubit<BluetoothState> {
   final String userId;
   BluetoothCubit(this.userId) : super(BluetoothInitial()) {
+    FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkServiceAndListen();
     });
+  }
+  void _onReceiveTaskData(Object data) {
+    if (data is Map<String, dynamic>) {
+      try {
+        final newReadings = HealthReadingModel.fromProcessedJson(data);
+
+        if (lastReadings?.timestamp == newReadings.timestamp) return;
+
+        lastReadings = newReadings;
+        emit(BluetoothDataReceived(lastReadings!));
+
+        print("✅ UI Updated with HR: ${lastReadings!.heartRate}");
+      } catch (e) {
+        print("❌ Parsing Error in Cubit: $e");
+      }
+    }
   }
 
   final AuthApiService _apiService = AuthApiService();
@@ -88,35 +105,10 @@ class BluetoothCubit extends Cubit<BluetoothState> {
     _simulationTimer?.cancel();
   }
 
-  void sendDataToApi(HealthReadingModel healthModel) {
-    final fullResponse = HiveStorageService.getCachedProfile();
-    final cachedData = fullResponse?['data'] as Map<dynamic, dynamic>?;
-
-    double weight =
-        double.tryParse(cachedData?['weight']?.toString() ?? "0") ?? 0.0;
-    double height =
-        double.tryParse(cachedData?['height']?.toString() ?? "0") ?? 0.0;
-    int age = int.tryParse(cachedData?['age']?.toString() ?? "0") ?? 0;
-
-    String genderStr =
-        cachedData?['gender']?.toString().toLowerCase() ?? "male";
-    int gender = (genderStr == "male") ? 0 : 1;
-
-    final finalJson = healthModel.toBackendJson(
-      weight: weight,
-      height: height,
-      age: age,
-      gender: gender,
-    );
-
-    SocketService.sendHealthData(finalJson);
-  }
-
   Future<void> checkServiceAndListen() async {
     bool running = await FlutterForegroundTask.isRunningService;
     if (running) {
       emit(BluetoothConnected("Aura Watch"));
-      listenToBackgroundService();
       FlutterForegroundTask.sendDataToTask('GET_CURRENT_DATA');
     }
   }
@@ -176,23 +168,6 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   //     emit(BluetoothDataReceived(data));
   //   }
   // }
-  void listenToBackgroundService() {
-    FlutterForegroundTask.addTaskDataCallback((data) {
-      if (data is Map<String, dynamic>) {
-        print("📥 Raw Data from Background: $data");
-
-        try {
-          lastReadings = HealthReadingModel.fromProcessedJson(data);
-
-          emit(BluetoothDataReceived(lastReadings!));
-
-          print("✅ UI Updated with HR: ${lastReadings!.heartRate}");
-        } catch (e) {
-          print("❌ Parsing Error: $e");
-        }
-      }
-    });
-  }
 
   void startScan() async {
     bool permGranted = await _requestPermissions();
@@ -319,7 +294,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
       final String? token = LocalStorage.token;
       if (token != null) {
-        SocketService.init(token);
+        // SocketService.init(token);
       }
 
       emit(BluetoothConnected(deviceName));

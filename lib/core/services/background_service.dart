@@ -15,7 +15,7 @@ void startCallback() {
 class AuraBackgroundHandler extends TaskHandler {
   Timer? _demoTimer;
   final Random _random = Random();
-  Map<String, dynamic>? _lastGeneratedData;
+  int _lastStepsTotal = 0;
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
@@ -36,6 +36,7 @@ class AuraBackgroundHandler extends TaskHandler {
       print("ℹ️ Is Demo Mode: $isDemo");
 
       if (isDemo) {
+        _demoTimer?.cancel();
         _demoTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
           _generateAndSendFakeData();
         });
@@ -61,6 +62,7 @@ class AuraBackgroundHandler extends TaskHandler {
 
     final int hr = 72 + _random.nextInt(20);
     final int o2 = 96 + _random.nextInt(4);
+    final int currentSteps = 2000 + _random.nextInt(50);
 
     final data = HealthReadingModel(
       userId: LocalStorage.getUserId ?? "demo_user",
@@ -68,7 +70,7 @@ class AuraBackgroundHandler extends TaskHandler {
       heartRate: hr,
       oxygen: o2,
       speed: _random.nextInt(5),
-      steps: 2000 + _random.nextInt(50),
+      steps: currentSteps,
       lat: 30.0,
       lon: 31.0,
       position: 0,
@@ -76,7 +78,7 @@ class AuraBackgroundHandler extends TaskHandler {
       shake: (_random.nextInt(100) > 98) ? 1 : 0,
       battery: 85,
     );
-
+    _lastStepsTotal = currentSteps;
     final uiMap = {
       "user_id": data.userId,
       "timestamp": data.timestamp,
@@ -98,33 +100,33 @@ class AuraBackgroundHandler extends TaskHandler {
       height: height,
       age: age,
       gender: gender,
+      previousTotalSteps: _lastStepsTotal,
     );
-
-    _lastGeneratedData = uiMap;
 
     FlutterForegroundTask.sendDataToMain(uiMap);
 
-    if (SocketService.isConnected) {
-      SocketService.sendHealthData(backendMap);
-    }
+    print("🔄 Processing health data to backend");
+    SocketService.sendHealthData(data, backendMap);
   }
 
   void _safeInitSocket() {
     final String? token = LocalStorage.token;
-    if (token != null && !SocketService.isConnected) {
+
+    if (token != null &&
+        (!SocketService.isConnected && !SocketService.initialized)) {
       SocketService.init(token);
     }
   }
 
   @override
   void onReceiveData(Object data) async {
-    print("📩 Background received signal: $data");
+    // print("📩 Background received signal: $data");
 
-    if (data == 'GET_CURRENT_DATA') {
-      if (_lastGeneratedData != null) {
-        FlutterForegroundTask.sendDataToMain(_lastGeneratedData!);
-      }
-    }
+    // if (data == 'GET_CURRENT_DATA') {
+    //   if (_lastGeneratedData != null) {
+    //     FlutterForegroundTask.sendDataToMain(_lastGeneratedData!);
+    //   }
+    // }
   }
 
   @override

@@ -141,21 +141,43 @@ class HealthReadingModel extends HiveObject {
   //     },
   //   };
   // }
+
   Map<String, dynamic> toBackendJson({
     required double weight,
     required double height,
     required int age,
     required int gender,
+    required int previousTotalSteps,
   }) {
     DateTime dt = DateTime.tryParse(timestamp) ?? DateTime.now();
+
     double heightInMeters = height / 100;
     double bmi = (heightInMeters > 0)
         ? weight / (heightInMeters * heightInMeters)
         : 0.0;
+
     double strideLength = (gender == 0) ? height * 0.415 : height * 0.413;
-    double distanceInMeters = (steps * strideLength) / 100;
-    double distanceKm = distanceInMeters / 1000;
-    double caloriesBurned = steps * (weight * 0.0005);
+    double distanceKm = (steps * strideLength) / 100000;
+
+    double caloriesBurned = 0.0;
+    if (gender == 0) {
+      // Male
+      caloriesBurned =
+          (10 * weight) +
+          (6.25 * height) -
+          (5 * age) +
+          5 +
+          (steps * weight * 0.0005);
+    } else {
+      // Female
+      caloriesBurned =
+          (10 * weight) +
+          (6.25 * height) -
+          (5 * age) -
+          161 +
+          (steps * weight * 0.0005);
+    }
+
     double calculatedHrv = 40.0 + (heartRate % 10);
 
     return {
@@ -165,21 +187,19 @@ class HealthReadingModel extends HiveObject {
       "Height_cm": height,
       "Weight_kg": weight,
       "BMI": double.parse(bmi.toStringAsFixed(1)),
-      "Fitness_Level": (steps < 5000)
-          ? 1
-          : ((steps > 10000) ? 3 : 2), ///////////
+      "Fitness_Level": (steps < 5000) ? 1 : ((steps > 10000) ? 3 : 2),
       "Timestamp": timestamp,
       "Hour": dt.hour,
-      "Day_of_Week": dt.weekday,
+      "Day_of_Week": dt.weekday - 1,
       "Heart_Rate": heartRate.toDouble(),
       "SpO2": oxygen.toDouble(),
-      "HRV": double.parse(calculatedHrv.toStringAsFixed(1)), ////////
-      "Activity_Label": position, ////////////////
+      "HRV": double.parse(calculatedHrv.toStringAsFixed(1)),
+      "Activity_Label": position,
       "Speed_kmh": speed.toDouble(),
-      "Steps_Interval": (steps * 0.02).toInt(), ////////
+      "Steps_Interval": steps - previousTotalSteps,
       "Total_Steps": steps,
-      "Calories": caloriesBurned.toInt(), ////////
-      "Distance_km": double.parse(distanceKm.toStringAsFixed(2)), //////
+      "Calories": caloriesBurned.toInt(),
+      "Distance_km": double.parse(distanceKm.toStringAsFixed(2)),
     };
   }
 

@@ -47,8 +47,7 @@ void main() async {
       providers: [
         BlocProvider(
           create: (context) =>
-              BluetoothCubit(LocalStorage.getUserId ?? "guest_user")
-                ..listenToBackgroundService(),
+              BluetoothCubit(LocalStorage.getUserId ?? "guest_user"),
         ),
         BlocProvider(create: (context) => ProfileCubit()..initProfile()),
       ],
